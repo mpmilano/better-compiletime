@@ -1,0 +1,8 @@
+three kind of things:  raw, list, array.
+
+In value-land, raw + list are represented the same way; a list, which might happen to be one-length. There's probably an accessor method to make this less awkward when actually working with valueland. 
+
+In type-land, all three are distinct, and we have typelist<...> and typearr<N,...> for typed those-things.
+
+Okay, go!
+
