@@ -35,6 +35,10 @@ namespace compile_time {
     namespace value {
         template<std::size_t N, typename client> struct instanceBuilder;
         template<typename client> struct instance;
+
+        template<typename T> struct convert_to_instance_str{using type = T;};
+        template<typename T> using convert_to_instance = typename convert_to_instance_str<T>::type;
+
         template<typename client> struct instanceBuilder<0,client>{
             CONSTVARY2(template<typename F, typename... args> constexpr auto match(const instance<client>& c, F&& f, args&&... a ), {
                 return f(std::forward<args>(a)...);
@@ -42,10 +46,11 @@ namespace compile_time {
             constexpr instanceBuilder() = default;
         };
 
+        
 
         template<std::size_t N, typename client> struct instanceBuilder : public instanceBuilder<N-1,client>{
             using argN_t = DECT(boost::pfr::get<0>(std::declval<client>()));
-            argN_t argN{};
+            convert_to_instance<argN_t> argN{};
             #define MATCHDEF_2394857(argt, decorator...) \
             template<typename F, typename... args> constexpr auto match(const instance<client>& c, F&& f, args&&... a ) decorator {\
                 return instanceBuilder<N-1,client>::match(c, [] (F f, argt an, args... a) constexpr {return f(an,std::forward<args>(a)...); }, std::forward<F>(f), argN, std::forward<args>(a)...); \
