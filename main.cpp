@@ -1,5 +1,7 @@
 
 #include <boost/pfr/precise.hpp>
+#include <iostream>
+#include <type_traits>
 #define DECT(...) std::decay_t<decltype(__VA_ARGS__)>
 #define CONSTVARY(name, body...) name body name const body
 #define CONSTVARY2(name, name2, body...) name, name2 body name, name2 const body
@@ -27,14 +29,15 @@ namespace compile_time {
     
     };
 
+    template<typename compare, typename target>
+    using const_if_const = std::conditional_t<std::is_const_v<compare>, const target, target>;
+
     namespace value {
         template<std::size_t N, typename client> struct instanceBuilder;
         template<typename client> struct instance;
-        template<typename client> struct instanceBuilder<1,client>{
-            using arg0_t = DECT(boost::pfr::get<0>(std::declval<client>()));
-            arg0_t arg0;
+        template<typename client> struct instanceBuilder<0,client>{
             CONSTVARY2(template<typename F, typename... args> constexpr auto match(const instance<client>& c, F&& f, args&&... a ), {
-                return f(arg0,std::forward<args>(a)...);
+                return f(std::forward<args>(a)...);
             })
             constexpr instanceBuilder() = default;
         };
@@ -42,10 +45,13 @@ namespace compile_time {
 
         template<std::size_t N, typename client> struct instanceBuilder : public instanceBuilder<N-1,client>{
             using argN_t = DECT(boost::pfr::get<0>(std::declval<client>()));
-            argN_t argN;
-            CONSTVARY2(template<typename F, typename... args> constexpr auto match(const instance<client>& c, F&& f, args&&... a ), {
-                return instanceBuilder<N-1,client>::match(c, [] (F f, argN_t an, args... a) constexpr {return f(an,std::forward<args>(a)...); }, std::forward<F>(f), argN, std::forward<args>(a)...);
-            })
+            argN_t argN{};
+            #define MATCHDEF_2394857(argt, decorator...) \
+            template<typename F, typename... args> constexpr auto match(const instance<client>& c, F&& f, args&&... a ) decorator {\
+                return instanceBuilder<N-1,client>::match(c, [] (F f, argt an, args... a) constexpr {return f(an,std::forward<args>(a)...); }, std::forward<F>(f), argN, std::forward<args>(a)...); \
+            }
+            MATCHDEF_2394857(argN_t&)
+            MATCHDEF_2394857(const argN_t&, const)
             constexpr instanceBuilder() = default;
         };
 
@@ -74,9 +80,19 @@ namespace compile_time {
     }
 }
 
+using namespace compile_time;
+
+
+constexpr auto try_me(){
+    value::instance<client::B> b{};
+    b.match([] (auto& three) constexpr {three = 3;});
+    return b;
+}
+
 int main(){
 
-    using namespace compile_time;
-    value::instance<client::B> b;
-    b.match([] (auto&& three) constexpr {return three;});
+    constexpr value::instance<client::B> b = try_me();
+     auto three = b.match([] (auto&& three) constexpr {return three;});
+    //static_assert(three == 0);
+    std::cout << three << std::endl;
 }
