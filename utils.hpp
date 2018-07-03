@@ -1,6 +1,9 @@
 #pragma once
 #include <type_traits>
 
+#define CONSTVARY(name, body...) name body name const body
+#define CONSTVARY2(name, name2, body...) name, name2 body name, name2 const body
+
 namespace compile_time {
 
 #define DECT(...) std::decay_t<decltype(__VA_ARGS__)>
@@ -21,4 +24,18 @@ namespace compile_time {
     inline constexpr std::size_t index_of = index_of_f<T,in...>();
     template<std::size_t i, typename... in>
     using type_at = DECT(type_at_f<i,in...>());
+
+    template<typename T>
+    inline constexpr std::size_t struct_size = boost::pfr::tuple_size<T>::value;
+}
+
+namespace mutils{
+
+template <class T, class Enable = void>
+struct is_defined : std::false_type{};
+
+template <class T>
+struct is_defined<T, std::enable_if_t<(sizeof(T) > 0)> > : std::true_type{};
+template<class T> inline constexpr bool is_defined_v = is_defined<T>::value;
+template<std::size_t N> using num_as_ptr = std::integral_constant<std::size_t, N>*;
 }
