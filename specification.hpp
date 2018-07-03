@@ -1,4 +1,5 @@
 #pragma once
+#include "auto_specification.hpp"
 
 namespace compile_time{
     namespace specification {
@@ -8,8 +9,6 @@ namespace compile_time{
         template<typename T> struct pointer{};
         struct void_pointer{};
         template<typename T> struct list{};
-
-        template<typename T> struct permitted_raw<specification::list<T> > : public std::true_type{};
 
         template<typename T> struct convert_to_instance;
     }

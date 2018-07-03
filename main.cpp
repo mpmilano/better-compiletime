@@ -52,6 +52,15 @@ constexpr auto try_harder(){
     return a;
 }
 
+constexpr auto try_3(){
+    value::convert_to_instance_t<client::C> c{};
+    //C can't match
+    //c.match([](auto&&...) constexpr {});
+    //but can ues its fields
+    c.four = 4;
+    return c;
+}
+
 constexpr auto try_4(){
     value::convert_to_instance_t<client::D> d{};
     //D can match
@@ -75,7 +84,14 @@ int main(){
         return three.match([](const int& three) constexpr{return three;});
     });
     static_assert(five == 5);
+    constexpr auto c = try_3();
+    constexpr auto four = c.four;
+    constexpr auto d = try_4();
+    constexpr auto six = d.five;
+    static_assert(six == 6);
     std::cout << three << std::endl;
     std::cout << one << std::endl;
     std::cout << five << std::endl;
+    std::cout << four << std::endl;
+    std::cout << six << std::endl;
 }
