@@ -38,23 +38,40 @@ namespace compile_time {
             return types::instance<T,DECT(ctcx::template convert_to_type_f<get_field<Value,indexes>>())...>{};
         }
 
-        template<typename FValue, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(instance<T> const * const, types::wrapped_type<specs>...){
-            using ctctx = compile_time_context<top, specs...>;
+        template<typename FValue, typename Allocator_holder, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(instance<T> const * const, types::wrapped_type<specs>...){
+            using ctctx = compile_time_context<Allocator_holder, top, specs...>;
             return convert_to_type_instance<FValue,ctctx,T>(std::make_index_sequence<struct_size<T>>{});
         }
 
-        template<typename FValue, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(list<T> const * const, types::wrapped_type<specs>...){
+        template<typename FValue, typename ctcx, typename spec1, typename... specs> 
+        constexpr auto convert_to_type_voidpointer(std::enable_if_t<FValue{}()>* = nullptr){
+            constexpr auto ptr = FValue{}();
+            if constexpr(ptr.is_this_type(ctcx::allocator.template as_single_allocator<spec1>())){
+                struct_wrap(converted,FValue{}().get(ctcx::allocator.template as_single_allocator<spec1>()));
+                using wrapped = simple_wrapper<converted>;
+                return ctcx::template convert_to_type_f<wrapped>();
+            }
+            else return convert_to_type_voidpointer<FValue, ctcx, specs...>();
+            //no base-case, because we should never run past the end of this list!
+        }
+
+        template<typename FValue, typename Allocator_holder, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(void_pointer const * const, types::wrapped_type<specs>...){
+            using ctctx = compile_time_context<Allocator_holder, top, specs...>;
+            return convert_to_type_voidpointer<FValue,ctcx,specs...>();
+        }
+
+        template<typename FValue, typename Allocator_holder, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(list<T> const * const, types::wrapped_type<specs>...){
             return types::list<>{};
         }
     }
 
-    template<typename top, typename... specs> template<typename FValue>
-    constexpr auto compile_time_context<top, specs...>::convert_to_type_f(){
+    template<typename Allocator_holder, typename top, typename... specs> template<typename FValue>
+    constexpr auto compile_time_context<Allocator_holder, top, specs...>::convert_to_type_f(){
         constexpr auto value = FValue{}();
         using value_t = DECT(value);
         if constexpr (specification::is_permitted_raw<value_t>){
             return types::raw_value<value_t, value>{};
         }
-        else return value_to_type::convert_to_type_f<FValue, top>(&value, types::wrapped_type<specs>{}...);
+        else return value_to_type::convert_to_type_f<FValue, Allocator_holder, top>(&value, types::wrapped_type<specs>{}...);
     }
 }

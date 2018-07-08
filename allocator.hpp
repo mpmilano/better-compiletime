@@ -88,6 +88,7 @@ template<std::size_t s, typename Top, typename... Subs> struct Allocator
 	: public SingleAllocator<s,Subs>...{
 
 	Top top;
+	static constexpr const std::size_t size = s;
 
 	constexpr Allocator():SingleAllocator<s,Subs>(*this)...{}
 
@@ -102,6 +103,16 @@ template<std::size_t s, typename Top, typename... Subs> struct Allocator
 
 	template<typename T>
 		constexpr SingleAllocator<s,T>& get(){
+		return *this;
+	}
+
+	template<typename sub>
+	constexpr SingleAllocator<s,sub> & as_single_allocator() {
+		return *this;
+	}
+
+	template<typename sub>
+	constexpr const SingleAllocator<s,sub> & as_single_allocator() const {
 		return *this;
 	}
 
