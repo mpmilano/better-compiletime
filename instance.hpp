@@ -22,6 +22,7 @@ namespace compile_time {
             CONSTVARY(template<typename... args> constexpr auto match(args&&... a ),{
                 return matchBuilder<struct_size<client>,client>::match(*this,std::forward<args>(a)...);
             })
+            const std::size_t num_fields = struct_size<client>;
             private: 
             //the gets
             template<std::size_t N> constexpr decltype(auto) get(specification::user_definition<client>*) const {

@@ -5,6 +5,8 @@
 #include "utils.hpp"
 #include "specification.hpp"
 #include "instance.hpp"
+#include "types.hpp"
+#include "convert.hpp"
 
 
 namespace compile_time {
@@ -45,7 +47,7 @@ constexpr auto try_me(){
 
 constexpr auto try_harder(){
     value::convert_to_instance_t<client::A> a{};
-    a.match([] (int& one, auto& two, value::instance<client::B>& three) constexpr {
+    a.match([] (int& one, auto& /*two*/, value::instance<client::B>& three) constexpr {
         one = 1;
         three.match([](int& three) constexpr {three = 5;});
     });
@@ -94,4 +96,8 @@ int main(){
     std::cout << five << std::endl;
     std::cout << four << std::endl;
     std::cout << six << std::endl;
+    struct_wrap(wrapped_harder, try_harder());
+    using as_type = typename compile_time_context<client::A,client::B,client::C,client::D>::template convert_to_type<wrapped_harder>;
+    //quash warning
+    static_assert(!std::is_arithmetic_v<as_type>);
 }

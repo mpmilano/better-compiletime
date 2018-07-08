@@ -8,7 +8,7 @@ namespace compile_time
         template<typename client> struct instance;
 
         template<typename client> struct matchBuilder<0,client>{
-            template<typename F, typename... args> static constexpr decltype(auto) match(const instance<client>& c, F&& f, args&&... a ) {
+            template<typename F, typename... args> static constexpr decltype(auto) match(const instance<client>&, F&& f, args&&... a ) {
                 return f(std::forward<args>(a)...);
             }
             constexpr matchBuilder() = delete;

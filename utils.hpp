@@ -7,6 +7,8 @@
 namespace compile_time {
 
 #define DECT(...) std::decay_t<decltype(__VA_ARGS__)>
+#define struct_wrap(name, invocation) struct name { constexpr name() = default; constexpr auto operator()() const {return invocation;}};
+
 
     template<typename T, typename fst, typename... rst>
     constexpr std::size_t index_of_f(){
