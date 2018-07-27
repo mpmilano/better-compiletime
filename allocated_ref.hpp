@@ -4,6 +4,8 @@
 namespace compile_time {
 template<std::size_t size, typename T> struct SingleAllocator;
 
+struct erased_ref;
+
 template<typename T>
 struct allocated_ref{
 private:
@@ -108,6 +110,5 @@ public:
 	constexpr operator bool() const {return indx > 0;}
 	
 };
-
 
 }

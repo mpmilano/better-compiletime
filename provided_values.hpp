@@ -1,4 +1,5 @@
 #include "specification.hpp"
+#include "allocated_ref.hpp"
 
 namespace compile_time {
     
@@ -12,6 +13,6 @@ namespace compile_time {
     
     namespace specification {
         template<typename T> struct convert_to_instance<list<T> > {using type = value::list<T>;};
-        template<typename T> struct convert_to_instance<void_pointer> {using type = value::void_pointer;};
+        template<> struct convert_to_instance<void_pointer> {using type = value::void_pointer;};
     }
 }

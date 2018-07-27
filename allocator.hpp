@@ -14,7 +14,7 @@ template<std::size_t size, typename T> struct SingleAllocator{
 	bool open_slots[size];
 
 	template<typename Allocator>
-	constexpr SingleAllocator(SingleAllocator&& o, Allocator& a)
+	constexpr SingleAllocator(SingleAllocator&& o, Allocator& )
 		:allocator_index(Allocator::template get_allocator_index<SingleAllocator>()),
 		data(std::move(o.data)),
 		open_slots{false} {

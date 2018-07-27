@@ -127,7 +127,7 @@ template<typename T, std::size_t _size> struct array {
 	}
 
 	constexpr array(array&& o)
-		:rest(std::move(o.rest)),hd{{std::move(o.hd[0])}}{}
+		:hd{{std::move(o.hd[0])}},rest(std::move(o.rest)) {}
 	constexpr array(){}
 };
 }
