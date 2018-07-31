@@ -38,7 +38,6 @@ namespace compile_time {
 
 using namespace compile_time;
 
-
 constexpr auto try_me(){
     value::convert_to_instance_t<client::B> b{};
     b.match([] (int& three) constexpr {three = 3;});
@@ -76,23 +75,23 @@ constexpr auto try_4(){
 
 struct boring_top{
         constexpr boring_top() = default;
-        specification::void_pointer p;
+        specification::void_pointer p{};
     };
 struct boringer_body{
     constexpr boringer_body() = default;
     std::size_t i{0};
 };
 
- namespace compile_time::specification{
+/* namespace compile_time::specification{
     template<> struct user_definition<boring_top> : public boring_top {constexpr user_definition() = default;};
     template<> struct user_definition<boringer_body> : public boringer_body {constexpr user_definition() = default;};
-}
+}*/
 
 constexpr auto try_with_allocator_sub(){
     ctctx::Allocator<boring_top, boringer_body> a;
     auto ref = ctctx::allocate<boringer_body>(a);
-    ref.get(a).i = 5;
-    a.top.p = erased_ref{std::move(ref),a};
+    ref.get(a).match([](auto &i) constexpr {i = 5;});
+    a.top.match([&](auto& p) constexpr {p = erased_ref{std::move(ref),a};});
     return a;
 }
 
@@ -104,10 +103,11 @@ struct holder_for_try_with_allocator{
 
 constexpr auto try_with_allocator(){
     using holder = holder_for_try_with_allocator;
-    constexpr auto f = [] () constexpr {
+    struct F { constexpr const DECT(holder::allocator.top)& operator()() const {
         return holder::allocator.top;
+    } constexpr F() = default;
     };
-    return compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<DECT(f)>{};
+    return compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>{};
 };
 
 int main(){
@@ -136,4 +136,6 @@ int main(){
     using as_type = typename compile_time_context<client::A,client::B,client::C,client::D>::template convert_to_type<wrapped_harder>;
     //quash warning
     static_assert(!std::is_arithmetic_v<as_type>);
+
+    constexpr const auto with_allocator = try_with_allocator();
 }

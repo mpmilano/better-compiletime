@@ -19,16 +19,16 @@ namespace compile_time {
 
         template<typename FValue, std::size_t field>
         struct get_field{
-            constexpr auto operator()() const {
+            constexpr auto& operator()() const {
                 return FValue{}().template get<field>();
             }
         };
 
         template<typename FValue>
         struct simple_wrapper {
-            static constexpr DECT(FValue{}()) value = FValue{}();
+            static constexpr const DECT(FValue{}()) &value = FValue{}();
             constexpr simple_wrapper() = default;
-            constexpr auto operator()() const {
+            constexpr auto& operator()() const {
                 return value;
             }
         };
@@ -45,7 +45,7 @@ namespace compile_time {
 
         template<typename FValue, typename ctcx, typename spec1, typename... specs> 
         constexpr auto convert_to_type_erased_ref(std::enable_if_t<FValue{}()>* = nullptr){
-            constexpr auto ptr = FValue{}();
+            constexpr auto &ptr = FValue{}();
             if constexpr(ptr.is_this_type(ctcx::allocator.template as_single_allocator<spec1>())){
                 struct_wrap(converted,FValue{}().get(ctcx::allocator.template as_single_allocator<spec1>()));
                 using wrapped = simple_wrapper<converted>;
@@ -75,7 +75,7 @@ namespace compile_time {
     template<typename Allocator_holder, typename top, typename... specs> template<typename FValue>
     constexpr auto i<Allocator_holder, top, specs...>::convert_to_type_f(){
         using namespace value_to_type;
-        constexpr auto value = FValue{}();
+        constexpr const auto &value = FValue{}();
         using value_t = DECT(value);
         if constexpr (specification::is_permitted_raw<value_t>){
             return types::raw_value<value_t, value>{};

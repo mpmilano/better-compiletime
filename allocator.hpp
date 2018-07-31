@@ -97,7 +97,7 @@ template<std::size_t s, typename Top, typename... Subs> struct Allocator
 		top(std::move(o.top)){}
 	
 	template<typename SA>
-	static std::size_t get_allocator_index(){
+	static constexpr std::size_t get_allocator_index(){
 		return index_of<SA, SingleAllocator<s,Subs>...>;
 	}
 

@@ -51,6 +51,7 @@ namespace compile_time {
                 return get<N>(swtch);
             }
         };
+
     }
 } // compile_time
 

@@ -23,5 +23,7 @@ namespace compile_time{
     namespace specification {
     template<typename T> struct convert_to_instance : public value::default_convert<is_permitted_raw<T>, T>{};
     template<typename T> struct convert_to_type : public types::default_convert<is_permitted_raw<T>, T>{};
+    template<typename T> struct convert_to_instance<value::instance<T> > : public convert_to_instance<T> {};
+    template<typename T> struct convert_to_type<types::instance<T> > : public convert_to_type<T> {};
     }
 }

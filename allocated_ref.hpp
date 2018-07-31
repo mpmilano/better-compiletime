@@ -48,6 +48,7 @@ public:
 	}
 
 	constexpr operator bool() const {return indx > 0;}
+	friend struct erased_ref;
 	
 };
 
@@ -80,8 +81,8 @@ public:
 		return new_parent.data[indx-1];
 	}
 
-	template<typename T, typename Allocator>
-	constexpr bool is_this_type(const Allocator& a){
+	template<typename Allocator>
+	constexpr bool is_this_type(const Allocator& a) const {
 		return is_this_type(a,a);
 	}
 
