@@ -135,7 +135,7 @@ int main(){
     std::cout << four << std::endl;
     std::cout << six << std::endl;
     struct_wrap(wrapped_harder, try_harder());
-    using as_type = typename compile_time_context<client::A,client::B,client::C,client::D>::template convert_to_type<compile_time::value_to_type::wrap_invocation<wrapped_harder>>;
+    using as_type = typename compile_time_context<client::A,client::B,client::C,client::D>::template convert_to_type<wrapped_harder>;
     //quash warning
     static_assert(!std::is_arithmetic_v<as_type>);
 

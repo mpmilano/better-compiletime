@@ -4,10 +4,18 @@
 #define CONSTVARY(name, body...) name body name const body
 #define CONSTVARY2(name, name2, body...) name, name2 body name, name2 const body
 
+#define DECT(...) std::decay_t<decltype(__VA_ARGS__)>
+
 namespace compile_time {
 
-#define DECT(...) std::decay_t<decltype(__VA_ARGS__)>
-#define struct_wrap(name, invocation) struct name { constexpr name() = default; constexpr auto operator()() const {return invocation;}};
+    template<typename F>
+    struct wrap_invocation {
+        static const constexpr DECT(F{}()) value{};
+        constexpr wrap_invocation() = default;
+        constexpr auto& operator()() const {return value;}
+    };
+
+#define struct_wrap(name, invocation...) struct __ ## name { constexpr __ ## name() = default; constexpr auto operator()() const {return invocation;}}; using name = wrap_invocation<__ ## name>;
 
 
     template<typename T, typename fst, typename... rst>
