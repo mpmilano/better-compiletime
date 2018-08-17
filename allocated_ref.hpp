@@ -3,7 +3,7 @@
 #include <cassert>
 namespace compile_time {
 template<std::size_t size, typename T> struct SingleAllocator;
-
+template<std::size_t s, typename Top, typename... Subs> struct Allocator;
 struct erased_ref;
 
 template<typename T>
@@ -74,16 +74,14 @@ public:
 		return new_parent.data[indx-1];
 	}
 
-	template<typename T, std::size_t size, typename Allocator>
-	constexpr bool is_this_type(const SingleAllocator<size,T>& new_parent, const Allocator &a) const {
+	template<typename T, std::size_t size, typename Top, typename... Subs>
+	constexpr bool is_this_type(const SingleAllocator<size,T>& new_parent, const Allocator<size,Top,Subs...> &a) const {
 		return a.template get_allocator_index<SingleAllocator<size,T> >() == allocator_index;
-		assert(indx > 0);
-		return new_parent.data[indx-1];
 	}
 
-	template<typename Allocator>
-	constexpr bool is_this_type(const Allocator& a) const {
-		return is_this_type(a,a);
+	template<typename T, std::size_t size, typename Top, typename... Subs>
+	constexpr bool is_this_type(const Allocator<size,Top,Subs...>& a) const {
+		return is_this_type<T>(a,a);
 	}
 
 	constexpr erased_ref(const erased_ref&) = delete;

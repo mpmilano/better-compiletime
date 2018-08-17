@@ -1,5 +1,6 @@
 #pragma once
 #include "compile_time_context.hpp"
+#include <tuple>
 #include "specification.hpp"
 #include "types.hpp"
 
@@ -19,23 +20,45 @@ namespace compile_time {
 
         template<typename FValue, std::size_t field>
         struct get_field{
+            constexpr static auto& value = FValue::value.template get<field>();
             constexpr auto& operator()() const {
-                return FValue{}().template get<field>();
+                return value;
             }
         };
 
         template<typename FValue>
         struct simple_wrapper {
-            static constexpr const DECT(FValue{}()) &value = FValue{}();
+            static constexpr const DECT(FValue{}()) &value = FValue::value;
             constexpr simple_wrapper() = default;
             constexpr auto& operator()() const {
                 return value;
             }
         };
 
+        template<typename F>
+        struct wrap_invocation {
+            static const constexpr DECT(F{}()) value{};
+            constexpr wrap_invocation() = default;
+            constexpr auto& operator()() const {return value;}
+        };
+
+        template<typename T1, typename... T> constexpr types::instance<T1,T...>* instance_from_tuple_f(std::tuple<T1,T...>*){
+            return nullptr;
+        }
+
+        template<typename tpl>
+        using instance_from_tuple = DECT(*instance_from_tuple_f((tpl*)nullptr));
+
         template<typename FValue, typename ctcx, typename T, std::size_t... indexes> constexpr auto convert_to_type_instance(std::integer_sequence<std::size_t,indexes...>){
             using Value = simple_wrapper<FValue>;
-            return types::instance<T,DECT(ctcx::template convert_to_type_f<get_field<Value,indexes>>())...>{};
+            auto my_tuple = std::make_tuple(T{},ctcx::template convert_to_type_f<get_field<Value,indexes>>()...);
+            //using Return = types::instance<T,DECT(ctcx::template convert_to_type_f<get_field<Value,indexes>>())...>>;
+            using Return = instance_from_tuple<DECT(my_tuple)>;
+            struct field_get {
+                constexpr Return operator()() const;
+                constexpr field_get() = default;
+            };
+            return simple_wrapper<wrap_invocation<field_get>>{};
         }
 
         template<typename FValue, typename Allocator_holder, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(instance<T> const * const, types::wrapped_type<specs>...){
@@ -45,10 +68,10 @@ namespace compile_time {
 
         template<typename FValue, typename ctcx, typename spec1, typename... specs> 
         constexpr auto convert_to_type_erased_ref(std::enable_if_t<FValue{}()>* = nullptr){
-            constexpr auto &ptr = FValue{}();
-            if constexpr(ptr.is_this_type(ctcx::allocator.template as_single_allocator<spec1>())){
-                struct_wrap(converted,FValue{}().get(ctcx::allocator.template as_single_allocator<spec1>()));
-                using wrapped = simple_wrapper<converted>;
+            constexpr auto &ptr = FValue::value;
+            if constexpr(ptr.template is_this_type<spec1>(ctcx::allocator)){
+                struct_wrap(converted,FValue::value.get(ctcx::allocator.template as_single_allocator<spec1>()));
+                using wrapped = simple_wrapper<wrap_invocation<converted>>;
                 return ctcx::template convert_to_type_f<wrapped>();
             }
             else return convert_to_type_erased_ref<FValue, ctcx, specs...>();
@@ -62,8 +85,8 @@ namespace compile_time {
 
         template<typename FValue, typename Allocator_holder, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(allocated_ref<T> const * const, types::wrapped_type<specs>...){
             using ctcx = compile_time_context<Allocator_holder, top, specs...>;
-            struct_wrap(converted,FValue{}().get(ctcx::allocator.template as_single_allocator<T>()));
-            using wrapped = simple_wrapper<converted>;
+            struct_wrap(converted,FValue::value.get(ctcx::allocator.template as_single_allocator<T>()));
+            using wrapped = simple_wrapper<wrap_invocation<converted>>;
             return ctcx::template convert_to_type_f<wrapped>();
         }
 
@@ -75,10 +98,11 @@ namespace compile_time {
     template<typename Allocator_holder, typename top, typename... specs> template<typename FValue>
     constexpr auto i<Allocator_holder, top, specs...>::convert_to_type_f(){
         using namespace value_to_type;
-        constexpr const auto &value = FValue{}();
+        constexpr const auto &value = FValue::value;
         using value_t = DECT(value);
         if constexpr (specification::is_permitted_raw<value_t>){
-            return types::raw_value<value_t, value>{};
+            constexpr const auto _value = FValue::value;
+            return types::raw_value<value_t, _value>{};
         }
         else return value_to_type::convert_to_type_f<FValue, Allocator_holder, top>(&value, types::wrapped_type<specs>{}...);
     }

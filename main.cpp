@@ -98,15 +98,17 @@ constexpr auto try_with_allocator_sub(){
 struct holder_for_try_with_allocator{
         static const constexpr ctctx::Allocator<boring_top, boringer_body> allocator{try_with_allocator_sub()};
     };
-
+    struct holder_for_try_with_allocator_F { 
+        using holder = holder_for_try_with_allocator;
+        static constexpr const DECT(holder::allocator.top)& value = holder::allocator.top;
+        constexpr const auto& operator()() const { return value;}
+        constexpr holder_for_try_with_allocator_F() = default;
+    };
 
 
 constexpr auto try_with_allocator(){
-    using holder = holder_for_try_with_allocator;
-    struct F { constexpr const DECT(holder::allocator.top)& operator()() const {
-        return holder::allocator.top;
-    } constexpr F() = default;
-    };
+    using F = holder_for_try_with_allocator_F;
+    using holder = typename F::holder;
     return compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>{};
 };
 
@@ -133,7 +135,7 @@ int main(){
     std::cout << four << std::endl;
     std::cout << six << std::endl;
     struct_wrap(wrapped_harder, try_harder());
-    using as_type = typename compile_time_context<client::A,client::B,client::C,client::D>::template convert_to_type<wrapped_harder>;
+    using as_type = typename compile_time_context<client::A,client::B,client::C,client::D>::template convert_to_type<compile_time::value_to_type::wrap_invocation<wrapped_harder>>;
     //quash warning
     static_assert(!std::is_arithmetic_v<as_type>);
 
