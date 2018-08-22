@@ -140,4 +140,5 @@ int main(){
     static_assert(!std::is_arithmetic_v<as_type>);
 
     constexpr const auto with_allocator = try_with_allocator();
+    with_allocator.print();
 }

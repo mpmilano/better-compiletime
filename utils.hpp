@@ -10,7 +10,7 @@ namespace compile_time {
 
     template<typename F>
     struct wrap_invocation {
-        static const constexpr DECT(F{}()) value{};
+        static const constexpr DECT(F{}()) value{F{}()};
         constexpr wrap_invocation() = default;
         constexpr auto& operator()() const {return value;}
     };

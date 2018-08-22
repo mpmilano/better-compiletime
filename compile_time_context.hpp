@@ -10,7 +10,7 @@ namespace compile_time {
         template<typename Allocator_holder, typename top_converted, typename... converted> struct i{
             static const constexpr compile_time::Allocator<allocator_size,top_converted, converted...> &allocator{Allocator_holder::allocator};
             template<typename Fvalue> static constexpr auto convert_to_type_f();
-            template<typename Fvalue> using convert_to_type = DECT(convert_to_type_f<Fvalue>());
+            template<typename Fvalue> using convert_to_type = typename DECT(convert_to_type_f<Fvalue>().value);
         };
 
         template<typename T, typename A>

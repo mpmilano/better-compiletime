@@ -28,7 +28,7 @@ namespace compile_time {
 
         template<typename FValue>
         struct simple_wrapper {
-            static constexpr const DECT(FValue{}()) &value = FValue::value;
+            static constexpr const DECT(FValue::value) &value = FValue::value;
             constexpr simple_wrapper() = default;
             constexpr auto& operator()() const {
                 return value;
@@ -41,7 +41,7 @@ namespace compile_time {
 
         template<typename FValue, typename ctcx, typename T, std::size_t... indexes> constexpr auto convert_to_type_instance(std::integer_sequence<std::size_t,indexes...>){
             using Value = simple_wrapper<FValue>;
-            struct_wrap(return_t, types::instance<T,DECT(ctcx::template convert_to_type_f<get_field<Value,indexes>>())...>{};);
+            struct_wrap(return_t, types::instance<T,DECT(ctcx::template convert_to_type_f<get_field<Value,indexes>>().value)...>{};);
             return simple_wrapper<return_t>{};
         }
 
@@ -75,7 +75,12 @@ namespace compile_time {
         }
 
         template<typename FValue, typename Allocator_holder, typename top, typename T, typename... specs> constexpr auto convert_to_type_f(list<T> const * const, types::wrapped_type<specs>...){
-            return types::list<>{};
+            //TODO: actually read the list contents. 
+            struct return_t {
+                types::list<> value{};
+                constexpr return_t() = default;
+            };
+            return return_t{};
         }
     }
     namespace ctctx {
@@ -86,7 +91,11 @@ namespace compile_time {
         using value_t = DECT(value);
         if constexpr (specification::is_permitted_raw<value_t>){
             constexpr const auto _value = FValue::value;
-            return types::raw_value<value_t, _value>{};
+            struct return_t {
+                types::raw_value<value_t, _value> value{};
+                constexpr return_t() = default;
+            };
+            return return_t{};
         }
         else return value_to_type::convert_to_type_f<FValue, Allocator_holder, top>(&value, types::wrapped_type<specs>{}...);
     }
