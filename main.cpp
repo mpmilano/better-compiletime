@@ -109,7 +109,8 @@ struct holder_for_try_with_allocator{
 constexpr auto try_with_allocator(){
     using F = holder_for_try_with_allocator_F;
     using holder = typename F::holder;
-    return compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>{};
+    //return compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>{};
+    return convert_to_value<ctctx::Allocator<boring_top,boringer_body>,compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>>();
 };
 
 int main(){

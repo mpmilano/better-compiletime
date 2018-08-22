@@ -55,7 +55,7 @@ public:
 struct erased_ref{
 private:
 	std::size_t indx;
-	const std::size_t allocator_index;
+	std::size_t allocator_index;
 public:
 	
 	template<typename T, std::size_t size>
@@ -93,6 +93,11 @@ public:
 	:indx(o.indx),allocator_index(a.allocator_index){}
 	constexpr std::size_t get_index() const {return indx;}
 
+	template<typename T, std::size_t n>
+	constexpr void set(allocated_ref<T>&& o, const SingleAllocator<n,T>& a){
+		indx = o.indx;
+		allocator_index = a.allocator_index;
+	}
 	constexpr erased_ref():indx{0},allocator_index{0}{}
 
 	template<typename T, std::size_t s>
