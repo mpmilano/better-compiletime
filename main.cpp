@@ -50,13 +50,13 @@ constexpr auto try_harder(){
         one = 1;
         three.match([](int& three) constexpr {three = 5;});
     });
-    return a;
+    return std::move(a);
 }
 
 constexpr auto try_3(){
     value::convert_to_instance_t<client::C> c{};
     //C can't match
-    //c.match([](auto&&...) constexpr {});
+    //c.match([](auto&&... a) constexpr { return (f(a) + ...).unwrap(); });
     //but can ues its fields
     c.four = 4;
     return c;
@@ -141,5 +141,5 @@ int main(){
     static_assert(!std::is_arithmetic_v<as_type>);
 
     constexpr const auto with_allocator = try_with_allocator();
-    with_allocator.print();
+    //with_allocator.print();
 }

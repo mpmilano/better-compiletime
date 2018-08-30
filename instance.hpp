@@ -19,10 +19,20 @@ namespace compile_time {
 
         template<typename client> struct instance : public definition<client>{
             constexpr instance() = default;
+            constexpr instance(instance&&) = default;
+            constexpr instance(const instance&) = default;
             CONSTVARY(template<typename... args> constexpr auto match(args&&... a ),{
                 return matchBuilder<struct_size<client>,client>::match(*this,std::forward<args>(a)...);
             })
-            const std::size_t num_fields = struct_size<client>;
+            using num_fields = std::integral_constant<std::size_t, struct_size<client> >;
+            constexpr auto& operator=(const instance& o){
+                definition<client>::operator=(o);
+                return *this;
+            }
+            constexpr auto& operator==(instance&& o){
+                definition<client>::operator=(o);
+                return *this;
+            }
             private: 
             //the gets
             template<std::size_t N> constexpr decltype(auto) get(specification::user_definition<client>*) const {

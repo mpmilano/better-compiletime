@@ -84,8 +84,8 @@ public:
 		return is_this_type<T>(a,a);
 	}
 
-	constexpr erased_ref(const erased_ref&) = delete;
-	constexpr erased_ref(erased_ref&& o):indx(o.indx),allocator_index{o.allocator_index}{}
+	constexpr erased_ref(const erased_ref&) = default;
+	constexpr erased_ref(erased_ref&& o) = default;
 	struct really_set_index{constexpr really_set_index() = default;};
 	constexpr erased_ref(const really_set_index&, std::size_t index, std::size_t allocator_index):indx{index},allocator_index{allocator_index}{}
 	template<typename T, std::size_t n>
@@ -106,10 +106,8 @@ public:
 	template<typename T, std::size_t s>
 	constexpr void free(SingleAllocator<s,T>&);
 	
-	constexpr erased_ref& operator=(erased_ref&& o){
-		indx = o.indx;
-		return *this;
-	}
+	constexpr erased_ref& operator=(erased_ref&&) = default;
+	constexpr erased_ref& operator=(const erased_ref&) = default;
 
 	constexpr operator bool() const {return indx > 0;}
 	

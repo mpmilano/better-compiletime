@@ -53,7 +53,8 @@ namespace compile_time {
     template<typename Allocator, typename T>
     constexpr Allocator convert_to_value(){
         Allocator a;
-        a.top = type_to_value::convert_to_value(a,T{});
+        auto&& ref = type_to_value::convert_to_value(a,T{});
+        a.top.operator=(ref);
         return a;
     }
 }

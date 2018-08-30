@@ -10,12 +10,14 @@ namespace compile_time {
 
     template<typename F>
     struct wrap_invocation {
-        static const constexpr DECT(F{}()) value{F{}()};
-        constexpr wrap_invocation() = default;
+        static const constexpr DECT(F{}()) value{/*F{}()*/};
+        constexpr wrap_invocation() {
+            value = F{}();
+        }
         constexpr auto& operator()() const {return value;}
     };
 
-#define struct_wrap(name, invocation...) struct __ ## name { constexpr __ ## name() = default; constexpr auto operator()() const {return invocation;}}; using name = wrap_invocation<__ ## name>;
+#define struct_wrap(name, invocation...) struct __ ## name { constexpr __ ## name() = default; constexpr decltype(auto) operator()() const {return invocation;}}; using name = wrap_invocation<__ ## name>;
 
 
     template<typename T, typename fst, typename... rst>
