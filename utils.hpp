@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <boost/pfr/precise.hpp>
 
 #define CONSTVARY(name, body...) name body name const body
 #define CONSTVARY2(name, name2, body...) name, name2 body name, name2 const body
