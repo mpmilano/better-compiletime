@@ -75,7 +75,7 @@ public:
 	}
 
 	template<typename T, std::size_t size, typename Top, typename... Subs>
-	constexpr bool is_this_type(const SingleAllocator<size,T>& new_parent, const Allocator<size,Top,Subs...> &a) const {
+	constexpr bool is_this_type(const SingleAllocator<size,T>&, const Allocator<size,Top,Subs...> &a) const {
 		return a.template get_allocator_index<SingleAllocator<size,T> >() == allocator_index;
 	}
 
@@ -98,6 +98,12 @@ public:
 		indx = o.indx;
 		allocator_index = a.allocator_index;
 	}
+
+	constexpr void clear(){
+		indx = 0;
+		allocator_index = 0;
+	}
+
 	constexpr erased_ref():indx{0},allocator_index{0}{}
 
 	template<typename T, std::size_t s>

@@ -51,15 +51,20 @@ namespace compile_time {
         }
 
         template<typename FValue, typename ctcx, typename spec1, typename... specs> 
-        constexpr auto convert_to_type_erased_ref(std::enable_if_t<FValue{}()>* = nullptr){
-            constexpr auto &ptr = FValue::value;
-            if constexpr(ptr.template is_this_type<spec1>(ctcx::allocator)){
-                struct_wrap(converted,FValue::value.get(ctcx::allocator.template as_single_allocator<spec1>()));
-                using wrapped = simple_wrapper<converted>;
-                return ctcx::template convert_to_type_f<wrapped>();
+        constexpr auto convert_to_type_erased_ref(){
+            if constexpr (FValue{}()){
+                constexpr auto &ptr = FValue::value;
+                if constexpr(ptr.template is_this_type<spec1>(ctcx::allocator)){
+                    struct_wrap(converted,FValue::value.get(ctcx::allocator.template as_single_allocator<spec1>()));
+                    using wrapped = simple_wrapper<converted>;
+                    return ctcx::template convert_to_type_f<wrapped>();
+                }
+                else return convert_to_type_erased_ref<FValue, ctcx, specs...>();
+                //no base-case, because we should never run past the end of this list!
             }
-            else return convert_to_type_erased_ref<FValue, ctcx, specs...>();
-            //no base-case, because we should never run past the end of this list!
+            else {
+                struct_wrap(ret, types::null_type{}); return simple_wrapper<ret>{};
+            }
         }
 
         template<typename FValue, typename Allocator_holder, typename top, typename... specs> constexpr auto convert_to_type_f(erased_ref const * const, types::wrapped_type<specs>...){

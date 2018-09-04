@@ -16,6 +16,7 @@ namespace compile_time
             static_assert(sizeof...(Fields) == struct_size<T>, "Error: incorrect number of fields");
             constexpr instance() = default;
         };
+        struct null_type { constexpr null_type() = default; };
         //template<typename T> struct default_convert<false, list<T> > {template<typename... Fields> using type = instance<T, Fields...>;};
         template<typename T, T> struct raw_value{constexpr raw_value() = default; };
 

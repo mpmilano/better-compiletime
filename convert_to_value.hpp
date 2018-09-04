@@ -1,6 +1,7 @@
 #pragma once
 #include "compile_time_context.hpp"
 #include "instance.hpp"
+#include "types.hpp"
 
 namespace compile_time {
     namespace type_to_value {
@@ -30,6 +31,12 @@ namespace compile_time {
             fill_in_field(a,ptr.template get<value::convert_to_instance_t<T>>(a), field);
         }
 
+        template<typename Allocator>
+        constexpr void fill_in_field(Allocator &, value::void_pointer& ptr, const types::null_type){
+            //PTR stays null.
+            ptr.clear();
+        }
+
         template<typename Allocator, typename T, typename... fields>
         constexpr auto _convert_to_value(Allocator& a, const types::instance<T, fields...>&) {
             value::convert_to_instance_t<T> ret;
@@ -43,7 +50,6 @@ namespace compile_time {
         constexpr auto _convert_to_value(Allocator &, const types::raw_value<Val,val>&){
             return val;
         }
-
 
         template<typename A, typename B>
         constexpr auto convert_to_value(A& a, const B& b){

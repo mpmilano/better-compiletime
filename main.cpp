@@ -50,7 +50,7 @@ constexpr auto try_harder(){
         one = 1;
         three.match([](int& three) constexpr {three = 5;});
     });
-    return std::move(a);
+    return a;
 }
 
 constexpr auto try_3(){
@@ -88,29 +88,36 @@ struct boringer_body{
 }*/
 
 constexpr auto try_with_allocator_sub(){
-    ctctx::Allocator<boring_top, boringer_body> a;
-    auto ref = ctctx::allocate<boringer_body>(a);
-    ref.get(a).match([](auto &i) constexpr {i = 5;});
+    ctctx::Allocator<boring_top, boring_top, boringer_body> a;
+    auto ref = ctctx::allocate<boring_top>(a);
+    //ref.get(a).match([](auto &i) constexpr {i = 5;});
     a.top.match([&](auto& p) constexpr {p = erased_ref{std::move(ref),a};});
     return a;
 }
 
 struct holder_for_try_with_allocator{
-        static const constexpr ctctx::Allocator<boring_top, boringer_body> allocator{try_with_allocator_sub()};
+        static const constexpr ctctx::Allocator<boring_top, boring_top, boringer_body> allocator{try_with_allocator_sub()};
     };
+    template<typename _holder>
     struct holder_for_try_with_allocator_F { 
-        using holder = holder_for_try_with_allocator;
+        using holder = _holder;
         static constexpr const DECT(holder::allocator.top)& value = holder::allocator.top;
         constexpr const auto& operator()() const { return value;}
         constexpr holder_for_try_with_allocator_F() = default;
     };
 
-
-constexpr auto try_with_allocator(){
-    using F = holder_for_try_with_allocator_F;
+struct try_with_allcator_str {
+    using F = holder_for_try_with_allocator_F<holder_for_try_with_allocator>;
     using holder = typename F::holder;
     //return compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>{};
-    return convert_to_value<ctctx::Allocator<boring_top,boringer_body>,compile_time_context<holder, boring_top, boringer_body>::template convert_to_type<F>>();
+    using step1 = compile_time_context<holder, boring_top, boring_top, boringer_body>::template convert_to_type<F>;
+    struct step2 {static const constexpr ctctx::Allocator<boring_top, boring_top, boringer_body> allocator{convert_to_value<ctctx::Allocator<boring_top,boring_top, boringer_body>,step1>()};};
+    using step2a = holder_for_try_with_allocator_F<step2>;
+};
+
+constexpr auto try_with_allocator(){
+    return compile_time_context<typename try_with_allcator_str::holder, boring_top, boring_top, boringer_body>::template convert_to_type<typename try_with_allcator_str::step2a>{};
+
 };
 
 int main(){
@@ -141,5 +148,6 @@ int main(){
     static_assert(!std::is_arithmetic_v<as_type>);
 
     constexpr const auto with_allocator = try_with_allocator();
-    //with_allocator.print();
+    with_allocator.print();
+    (void) with_allocator;
 }
