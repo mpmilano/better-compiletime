@@ -11,6 +11,7 @@ namespace compile_time
     namespace types{
 
         template<typename...> struct list{constexpr list() = default;};
+        template<char...> struct string{constexpr string() = default;};
 
         template<typename T, typename... Fields> struct instance {
             static_assert(sizeof...(Fields) == struct_size<T>, "Error: incorrect number of fields");

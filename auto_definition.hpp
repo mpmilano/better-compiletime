@@ -9,6 +9,11 @@ namespace compile_time{
     template<typename T> using convert_to_instance_t = typename specification::convert_to_instance<T>::type; 
 
             template<std::size_t N, std::size_t max_size, typename client> struct auto_defn_impl;
+#define auto_defn_impl_body_23423_ctrs constexpr auto_defn_impl() = default;\
+            constexpr auto_defn_impl(const auto_defn_impl&) = default;\
+            constexpr auto_defn_impl(auto_defn_impl&&) = default;\
+            constexpr auto_defn_impl& operator=(auto_defn_impl&&) = default;
+
 #define auto_defn_impl_body_23423 \
             static_assert(max_size > 0);\
             using argN_t = convert_to_instance_t<DECT(boost::pfr::get<N>(std::declval<client>()))>;\
@@ -18,12 +23,8 @@ namespace compile_time{
             }\
             constexpr const argN_t& get(std::integral_constant<std::size_t, N> const * const) const {\
                 return arg;\
-            }\
-            constexpr auto_defn_impl() = default;\
-            constexpr auto_defn_impl(const auto_defn_impl&) = default;\
-            constexpr auto_defn_impl(auto_defn_impl&&) = default;\
+            } auto_defn_impl_body_23423_ctrs \
             constexpr auto_defn_impl& operator=(const auto_defn_impl& o) {parent::operator=(o); arg = o.arg; return *this;} \
-            constexpr auto_defn_impl& operator=(auto_defn_impl&&) = default;\
 
 
         struct dummy_parent{};
@@ -31,6 +32,12 @@ namespace compile_time{
             using parent = dummy_parent;
             inline static constexpr std::size_t N = 0;
             auto_defn_impl_body_23423
+        };
+
+        template<std::size_t _N, typename client> struct auto_defn_impl<_N,0,client>{
+            auto_defn_impl_body_23423_ctrs
+            constexpr auto_defn_impl& operator=(const auto_defn_impl& o) = default;
+            void get(){}
         };
 
         template<std::size_t N, std::size_t max_size, typename client> struct auto_defn_impl : public auto_defn_impl<N-1,max_size,client> {

@@ -15,9 +15,25 @@ namespace compile_time {
         };
 
         template<typename T, typename A>
-        constexpr auto allocate(A && a){
+        constexpr decltype(auto) allocate(A && a){
             return a.template allocate<value::convert_to_instance_t<T>>();
         }
+
+        template<typename top, typename... specs>
+        struct value_info {
+            using Allocator = ::compile_time::ctctx::Allocator<top,specs...>;
+            Allocator allocator{};
+            template<typename T> using ct = value::convert_to_instance_t<T>;
+            constexpr value_info() = default;
+            constexpr value_info(const value_info&) = default;
+            constexpr value_info(value_info&&) = default;
+            constexpr value_info& operator=(const value_info&) = default;
+            constexpr value_info& operator=(value_info&&) = default;
+
+            template<typename T> decltype(auto) allocate(){
+                return ctctx::allocate<T>(allocator);
+            }
+        };
     }
     template<typename Allocator_holder> using compile_time_context = 
     ctctx::i<Allocator_holder>;

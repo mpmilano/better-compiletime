@@ -9,6 +9,7 @@ namespace compile_time{
         template<typename T> struct pointer{};
         struct void_pointer{};
         template<typename T> struct list{};
+        struct string{};
 
         template<typename T> struct convert_to_instance;
         template<typename T> struct convert_to_type;

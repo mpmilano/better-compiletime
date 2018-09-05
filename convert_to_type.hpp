@@ -89,6 +89,11 @@ namespace compile_time {
             return ctcx::template convert_to_type_f<wrapped>(debug_allocator);
         }
 
+        template<typename FValue, typename Allocator_holder> constexpr auto convert_to_type_f(const typename compile_time_context<Allocator_holder>::Allocator &debug_allocator, string const * const){
+            assert(false && "Still need to do this");
+            (void) debug_allocator;
+        }
+
         template<typename FValue, typename Allocator_holder, typename T> constexpr auto convert_to_type_f(const typename compile_time_context<Allocator_holder>::Allocator &debug_allocator, list<T> const * const){
             //TODO: actually read the list contents. 
             (void) debug_allocator;
