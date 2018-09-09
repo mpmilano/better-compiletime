@@ -30,8 +30,27 @@ namespace compile_time {
             constexpr value_info& operator=(const value_info&) = default;
             constexpr value_info& operator=(value_info&&) = default;
 
-            template<typename T> decltype(auto) allocate(){
+            template<typename T> constexpr decltype(auto) allocate(){
+                static_assert(((std::is_same_v<specs,T>) + ... + 0) == 1, "Error: attempt to allocate unregistered type");
                 return ctctx::allocate<T>(allocator);
+            }
+
+            template<typename T>
+            constexpr decltype(auto) single_allocator(){
+                static_assert(((std::is_same_v<specs,T>) + ... + 0) == 1, "Error: attempt to use unregistered type");
+                return allocator.template as_single_allocator<ct<T> >();
+            }
+
+            template<typename T> constexpr decltype(auto) void_allocate(){
+                static_assert(((std::is_same_v<specs,T>) + ... + 0) == 1, "Error: attempt to use unregistered type");
+                value::void_pointer ret;
+                ret.set(allocate<T>(),single_allocator<T>());
+                return ret;
+            }
+
+            template<typename T> constexpr decltype(auto) deref(value::pointer<value::instance<T>>& p){
+                static_assert(((std::is_same_v<specs,T>) + ... + 0) == 1, "Error: attempt to use unregistered type");
+                return p.get(allocator);
             }
         };
     }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "specification.hpp"
 #include "allocated_ref.hpp"
 
