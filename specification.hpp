@@ -7,7 +7,7 @@ template <typename T> struct permitted_raw : std::false_type {};
 // any arithmetic types will always be used raw.
 
 template <typename T> struct pointer {};
-struct void_pointer {};
+struct top_pointer {};
 template <typename T> struct list {};
 struct string {};
 

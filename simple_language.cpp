@@ -10,7 +10,7 @@
 
 namespace compile_time {
 namespace simple_language {
-using AST_node = specification::void_pointer;
+using AST_node = specification::top_pointer;
 using varname = specification::string;
 
 struct statement {
@@ -82,7 +82,7 @@ private:
     str_nc operands[2] = {{0}};
     last_split('+', _in, operands);
     ct<expression> ret;
-    ret.match([&](value::void_pointer & expr) constexpr {
+    ret.match([&](value::top_pointer & expr) constexpr {
       auto dec = allocate<binop<'+'>>();
       deref(dec).match([&](auto &l, auto &r) constexpr {
         l = parse_expression(operands[0]);
@@ -97,7 +97,7 @@ private:
   constexpr ct<expression> parse_constant(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    ret.match([&](value::void_pointer & expr) constexpr {
+    ret.match([&](value::top_pointer & expr) constexpr {
       auto dec = allocate<constant<std::size_t>>();
       deref(dec).match([&](auto &c) constexpr { c = parse_int(in); });
       expr.set(std::move(dec), single_allocator<constant<std::size_t>>());
@@ -109,7 +109,7 @@ private:
   constexpr ct<expression> parse_varref(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    ret.match([&](value::void_pointer & expr) constexpr {
+    ret.match([&](value::top_pointer & expr) constexpr {
       auto dec = allocate<varref>();
       deref(dec).match([&](auto &str) constexpr { trim(str.strbuf, in); });
       expr.set(std::move(dec), single_allocator<varref>());
@@ -140,7 +140,7 @@ private:
   constexpr ct<statement> parse_return(const fixed_cstr<str_size> &str) {
     using namespace mutils::cstring;
     ct<statement> ret;
-    ret.match([&](value::void_pointer & stmt) constexpr {
+    ret.match([&](value::top_pointer & stmt) constexpr {
       auto dec = allocate<Return>();
       str_nc ret_expr = {0};
       remove_first_word(ret_expr, str);
@@ -156,7 +156,7 @@ private:
   constexpr ct<statement> parse_declare(const fixed_cstr<str_size> &str) {
     using namespace mutils::cstring;
     ct<statement> ret;
-    ret.match([&](value::void_pointer & stmt) constexpr {
+    ret.match([&](value::top_pointer & stmt) constexpr {
       auto dec = allocate<declare>();
       str_nc let_expr = {0};
       remove_first_word(let_expr, str);
@@ -177,7 +177,7 @@ private:
   constexpr ct<statement> parse_assignment(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<statement> ret;
-    ret.match([&](value::void_pointer & stmt) constexpr {
+    ret.match([&](value::top_pointer & stmt) constexpr {
       auto dec = allocate<assign>();
       deref(dec).match([&](auto &l, auto &r) constexpr {
         str_nc string_bufs[2] = {{0}};
@@ -195,7 +195,7 @@ private:
     str_nc string_bufs[2] = {{0}};
     first_split(',', str, string_bufs);
     ct<statement> ret;
-    ret.match([&](value::void_pointer & stmt) constexpr {
+    ret.match([&](value::top_pointer & stmt) constexpr {
       auto dec = allocate<sequence>();
       deref(dec).match([&](auto &fst, auto &rst) constexpr {
         fst = parse_statement(string_bufs[0]);

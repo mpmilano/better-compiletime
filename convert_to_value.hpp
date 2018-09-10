@@ -28,14 +28,14 @@ constexpr void fill_in_field(Allocator &a, value::pointer<Field> &ptr,
 }
 
 template <typename Allocator, typename T, typename... fields>
-constexpr void fill_in_field(Allocator &a, value::void_pointer &ptr,
+constexpr void fill_in_field(Allocator &a, value::top_pointer &ptr,
                              const types::instance<T, fields...> &field) {
   ptr.set(ctctx::allocate<T>(a), a);
   fill_in_field(a, ptr.template get<value::convert_to_instance_t<T>>(a), field);
 }
 
 template <typename Allocator>
-constexpr void fill_in_field(Allocator &, value::void_pointer &ptr,
+constexpr void fill_in_field(Allocator &, value::top_pointer &ptr,
                              const types::null_type) {
   // PTR stays null.
   ptr.clear();

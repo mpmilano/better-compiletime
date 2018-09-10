@@ -75,7 +75,7 @@ constexpr auto try_4() {
 
 struct boring_top {
   constexpr boring_top() = default;
-  specification::void_pointer p{};
+  specification::top_pointer p{};
 };
 struct boringer_body {
   constexpr boringer_body() = default;

@@ -11,7 +11,7 @@ struct string {
   constexpr string() = default;
   char strbuf[1028] = {};
 };
-using void_pointer = erased_ref;
+using top_pointer = erased_ref;
 template <typename T> using pointer = allocated_ref<T>;
 } // namespace value
 
@@ -20,8 +20,8 @@ template <typename T> struct convert_to_instance<list<T>> {
   using type = value::list<T>;
 };
 template <> struct convert_to_instance<string> { using type = value::string; };
-template <> struct convert_to_instance<void_pointer> {
-  using type = value::void_pointer;
+template <> struct convert_to_instance<top_pointer> {
+  using type = value::top_pointer;
 };
 template <typename T> struct convert_to_instance<pointer<T>> {
   using type = value::pointer<T>;

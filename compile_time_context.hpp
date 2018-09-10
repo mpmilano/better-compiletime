@@ -44,10 +44,10 @@ template <typename top, typename... specs> struct value_info {
     return allocator.template as_single_allocator<ct<T>>();
   }
 
-  template <typename T> constexpr decltype(auto) void_allocate() {
+  template <typename T> constexpr decltype(auto) top_allocate() {
     static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
                   "Error: attempt to use unregistered type");
-    value::void_pointer ret;
+    value::top_pointer ret;
     ret.set(allocate<T>(), single_allocator<T>());
     return ret;
   }
