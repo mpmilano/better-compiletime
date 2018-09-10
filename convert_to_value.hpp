@@ -51,6 +51,13 @@ namespace compile_time {
             return val;
         }
 
+        template<typename Allocator, char... str>
+        constexpr auto _convert_to_value(Allocator&, const mutils::String<str...>& s){
+            value::string s2;
+            mutils::cstring::str_cpy(s2.strbuf,s.string);
+            return s2;
+        }
+
         template<typename A, typename B>
         constexpr auto convert_to_value(A& a, const B& b){
             return _convert_to_value(a,b);

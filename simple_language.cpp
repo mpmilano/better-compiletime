@@ -80,8 +80,68 @@ namespace simple_language{
             using fixed_str = mutils::cstring::fixed_str<s>;
 
             template<std::size_t str_size>
-            constexpr ct<expression> parse_expression(const fixed_cstr<str_size> &){
-                return ct<expression>{};
+            constexpr ct<expression> parse_add(const fixed_cstr<str_size> &_in){
+                using namespace mutils::cstring;
+                str_nc operands[2] = {{0}};
+                last_split('+', _in, operands);
+                ct<expression> ret;
+                ret.match([&](value::void_pointer& expr) constexpr {
+                    auto dec = allocate<binop<'+'>>();
+                    deref(dec).match([&](auto& l, auto& r) constexpr {
+                        l = parse_expression(operands[0]);
+                        r = parse_expression(operands[1]);
+                    });
+                    expr.set(std::move(dec),single_allocator<binop<'+'>>());
+                });
+                return ret;
+            }
+
+            template<std::size_t str_size>
+            constexpr ct<expression> parse_constant(const fixed_cstr<str_size> &in){
+                using namespace mutils::cstring;
+                ct<expression> ret;
+                ret.match([&](value::void_pointer& expr) constexpr {
+                    auto dec = allocate<constant<std::size_t>>();
+                    deref(dec).match([&](auto& c) constexpr {
+                        c = parse_int(in);
+                    });
+                    expr.set(std::move(dec),single_allocator<constant<std::size_t>>());
+                });
+                return ret;
+            }
+
+            template<std::size_t str_size>
+            constexpr ct<expression> parse_varref(const fixed_cstr<str_size> &in){
+                using namespace mutils::cstring;
+                ct<expression> ret;
+                ret.match([&](value::void_pointer& expr) constexpr {
+                    auto dec = allocate<varref>();
+                    deref(dec).match([&](auto& str) constexpr {
+                        trim(str.strbuf,in);
+                    });
+                    expr.set(std::move(dec),single_allocator<varref>());
+                });
+                return ret;
+            }
+
+            template<std::size_t str_size>
+            constexpr ct<expression> parse_expression(const fixed_cstr<str_size> & _in){
+                using namespace mutils::cstring;
+                fixed_str<str_size> in{0};
+                trim(in,_in);
+                if (contains_outside_parens("+",in)){
+                    return parse_add(in);
+                }
+                else {
+                     // constants and variables here.
+                    str_nc atom = {0};
+                    trim(atom, in);
+                    static_assert('0' < '9');
+                    if (atom[0] >= '0' && atom[0] <= '9')
+                        return parse_constant(atom);
+                    else
+                        return parse_varref(atom);
+                }
             }
 
             template<std::size_t str_size>
@@ -113,7 +173,7 @@ namespace simple_language{
                     deref(dec).match([&](auto& var, auto& expr, auto& body) constexpr {
                         str_nc string_bufs[2] = {{0}};
                         split_outside_parens('=', let_components[0], string_bufs);
-                        str_cpy(var.strbuf,string_bufs[0]);
+                        trim(var.strbuf,string_bufs[0]);
                         expr = parse_expression(string_bufs[1]);
                         body = parse_statement(let_components[1]);
                     });
@@ -130,7 +190,7 @@ namespace simple_language{
                     deref(dec).match([&](auto& l, auto& r) constexpr {
                         str_nc string_bufs[2] = {{0}};
                         split_outside_parens('=', in, string_bufs);
-                        str_cpy(l.strbuf,string_bufs[0]);
+                        trim(l.strbuf,string_bufs[0]);
                         r = parse_expression(string_bufs[1]);
                     });
                     stmt.set(std::move(dec),single_allocator<assign>());
@@ -155,8 +215,10 @@ namespace simple_language{
             }
 
             template<std::size_t str_size>
-            constexpr ct<statement> parse_statement(const fixed_cstr<str_size> &in){
+            constexpr ct<statement> parse_statement(const fixed_cstr<str_size> &_in){
                 using namespace mutils::cstring;
+                fixed_str<str_size> in{0};
+                trim(in,_in);
                 if (first_word_is("var",in)){
                     return parse_declare(in);
                 }
@@ -182,6 +244,71 @@ public:
             :parsed(parse_program(str)){}
     };
 
+    namespace type_printer{
+        using namespace types;
+
+        template<typename e> std::ostream& print(std::ostream& o, const e& = e{});
+
+        template<typename i, typename... v> std::ostream& operator<<(std::ostream& o, const instance<i,v...>& o2){
+            return print(o,o2);
+        }
+
+        template<typename i, typename... v> std::ostream& _print(std::ostream& o, const instance<program,instance<statement,instance<i,v...>>>& _i){
+            return print(o,instance<i,v...>{});
+        }
+
+        template<typename i, typename... v> std::ostream& _print(std::ostream& o, const instance<statement,instance<i,v...>>& _i){
+            return print(o,instance<i,v...>{});
+        }
+
+        template<typename i, typename... v> std::ostream& _print(std::ostream& o, const instance<expression,instance<i,v...>>& _i){
+            return print(o,instance<i,v...>{});
+        }
+
+        std::ostream& _print(std::ostream& o, const instance<expression,null_type>& _i){
+            return print(o,null_type{});
+        }
+
+        std::ostream& _print(std::ostream& o, const null_type& ){
+            return o << "NULL";
+        }
+
+        template<typename T, T v> std::ostream& _print(std::ostream& o, const instance<constant<T>,raw_value<T,v>>& ){
+            return o << v;
+        }
+
+        template<typename s1, typename s2> std::ostream& _print(std::ostream& o, const instance<binop<'+'>,s1,s2>& ){
+            return print(o,s1{}) << " + " << s2{};
+        }
+        
+        template<typename v> std::ostream& _print(std::ostream& o, const instance<varref,v>& ){
+            return print(o,v{});
+        }
+
+        template<typename s1, typename s2> std::ostream& _print(std::ostream& o, const instance<sequence,s1,s2>& ){
+            return print(o,s1{}) << ", " << s2{};
+        }
+        template<typename e> std::ostream& _print(std::ostream& o, const instance<Return,e>& ){
+            return o << "return " << e{};
+        }
+
+        template<typename v,typename e,typename b> std::ostream& _print(std::ostream& o, const instance<declare,v,e,b>& ){
+            return o << "var " << v{} << " = " << e{} << ", " << b{};
+        }
+
+        template<typename v,typename e> std::ostream& _print(std::ostream& o, const instance<assign,v,e>& ){
+            return print(o,v{}) << " = " << e{};
+        }
+
+        template<char... c> std::ostream& _print(std::ostream& o, const mutils::String<c...>& s){
+            return o << s.string;
+        }
+
+        template<typename e> std::ostream& print(std::ostream& o, const e& _e){
+            return _print(o,_e);
+        }
+    }
+
 }
 }
 
@@ -192,7 +319,7 @@ using namespace simple_language;
 #define PARSE(x...) parser<mutils::cstring::str_len(#x) + 1>{#x}
 
 constexpr decltype(auto) parse_trial(){
-    return PARSE(return 3 + 5, return 2 + 6, return 0 + 1).allocator;
+    return PARSE(var x = 0, var y = 4, x = x + y, return x).allocator;
 }
 
 struct convert_parsed {
@@ -204,9 +331,17 @@ struct convert_parsed {
 
 
 using step1 = CONVERT_T(convert_parsed);
+struct convert_again{
+    static const constexpr DECT(parse_trial()) allocator{convert_to_value<DECT(parse_trial()),step1>()};
+    static constexpr const DECT(allocator.top)& value = allocator.top;
+    constexpr const auto& operator()() const { return value;}
+    constexpr convert_again() = default;
+};
+using step2 = CONVERT_T(convert_again);
+static_assert(std::is_same_v<step1,step2>,"Sanity check");
 
 int main(){
     constexpr parser<28> parsed{"var x = 3 + 5, x + x, 7 + 8"};
     std::cout << &parsed.parsed << std::endl;
-    step1::print();
+    type_printer::print<step1>(std::cout) << std::endl;
 }

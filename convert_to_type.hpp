@@ -3,6 +3,8 @@
 #include <tuple>
 #include "specification.hpp"
 #include "types.hpp"
+#include "mutils/CTString.hpp"
+#include "mutils/cstring.hpp"
 
 namespace compile_time {
     namespace types{
@@ -90,7 +92,14 @@ namespace compile_time {
         }
 
         template<typename FValue, typename Allocator_holder> constexpr auto convert_to_type_f(const typename compile_time_context<Allocator_holder>::Allocator &debug_allocator, string const * const){
-            assert(false && "Still need to do this");
+            struct val{
+                constexpr val() = default;
+                constexpr const char* operator()() const {
+                    return FValue{}.value.strbuf;
+                }
+            };
+            struct_wrap(ret, mutils::cstring::build_type_string<val>());
+            return simple_wrapper<ret>{};
             (void) debug_allocator;
         }
 

@@ -1,11 +1,10 @@
 #pragma once
 #include <type_traits>
 #include <boost/pfr/precise.hpp>
+#include "mutils/type_utils.hpp"
 
 #define CONSTVARY(name, body...) name body name const body
 #define CONSTVARY2(name, name2, body...) name, name2 body name, name2 const body
-
-#define DECT(...) std::decay_t<decltype(__VA_ARGS__)>
 
 namespace compile_time {
 
