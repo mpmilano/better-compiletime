@@ -143,7 +143,7 @@ private:
       auto dec = allocate<Return>();
       str_nc ret_expr = {0};
       remove_first_word(ret_expr, str);
-      (MATCH(deref(dec), expr) { expr = parse_expression(ret_expr); });
+      ASSIGN_FIRST(deref(dec), expr, parse_expression(ret_expr));
       stmt = upcast(std::move(dec));
     });
     return ret;
