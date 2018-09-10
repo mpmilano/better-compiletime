@@ -99,7 +99,7 @@ private:
     ct<expression> ret;
     (MATCH(ret, expr) {
       auto dec = allocate<constant<std::size_t>>();
-      (MATCH(deref(dec), c) { c = parse_int(in); });
+      ASSIGN_FIRST(deref(dec), c, parse_int(in));
       expr.set(std::move(dec), single_allocator<constant<std::size_t>>());
     });
     return ret;

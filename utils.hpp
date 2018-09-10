@@ -70,3 +70,5 @@ using num_as_ptr = std::integral_constant<std::size_t, N> *;
 #define MATCH_IMPL2(count, ...) MATCH ## count (__VA_ARGS__)
 #define MATCH_IMPL(count, ...) MATCH_IMPL2(count, __VA_ARGS__)
 #define MATCH(...) MATCH_IMPL(VA_NARGS(__VA_ARGS__), __VA_ARGS__)
+
+#define ASSIGN_FIRST(s,f,expr...) s.match([&](auto &f, const auto&...) constexpr {f = expr;})
