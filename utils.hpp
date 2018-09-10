@@ -60,15 +60,15 @@ template <std::size_t N>
 using num_as_ptr = std::integral_constant<std::size_t, N> *;
 } // namespace mutils
 
-#define MATCH2(s,e) s).match([&](auto &e) constexpr 
-#define MATCH3(s,a,e) s).match([&](auto &a, auto &e) constexpr 
-#define MATCH4(s,a,b,e) s).match([&](auto &a, auto &b, auto &e) constexpr 
-#define MATCH5(s,a,b,c,e) s).match([&](auto &a, auto &b, auto& c, auto &e) constexpr 
-#define MATCH6(s,a,b,c,d,e) s).match([&](auto &a, auto &b, auto& c, auto& d, auto &e) constexpr 
+#define MATCH2(s, e) s).match([&](auto &e) constexpr
+#define MATCH3(s, a, e) s).match([&](auto &a, auto &e) constexpr
+#define MATCH4(s, a, b, e) s).match([&](auto &a, auto &b, auto &e) constexpr
+#define MATCH5(s, a, b, c, e) s).match([&](auto &a, auto &b, auto& c, auto &e) constexpr
+#define MATCH6(s, a, b, c, d, e) s).match([&](auto &a, auto &b, auto& c, auto& d, auto &e) constexpr
 
-
-#define MATCH_IMPL2(count, ...) MATCH ## count (__VA_ARGS__)
+#define MATCH_IMPL2(count, ...) MATCH##count(__VA_ARGS__)
 #define MATCH_IMPL(count, ...) MATCH_IMPL2(count, __VA_ARGS__)
 #define MATCH(...) MATCH_IMPL(VA_NARGS(__VA_ARGS__), __VA_ARGS__)
 
-#define ASSIGN_FIRST(s,f,expr...) s.match([&](auto &f, const auto&...) constexpr {f = expr;})
+#define ASSIGN_FIRST(s, f, expr...)                                            \
+  s.match([&](auto &f, const auto &...) constexpr { f = expr; })

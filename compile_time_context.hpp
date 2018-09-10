@@ -29,8 +29,10 @@ template <typename top, typename... specs> struct compile_time_workspace {
   constexpr compile_time_workspace() = default;
   constexpr compile_time_workspace(const compile_time_workspace &) = default;
   constexpr compile_time_workspace(compile_time_workspace &&) = default;
-  constexpr compile_time_workspace &operator=(const compile_time_workspace &) = default;
-  constexpr compile_time_workspace &operator=(compile_time_workspace &&) = default;
+  constexpr compile_time_workspace &
+  operator=(const compile_time_workspace &) = default;
+  constexpr compile_time_workspace &
+  operator=(compile_time_workspace &&) = default;
 
   template <typename T> constexpr decltype(auto) allocate() {
     static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
@@ -57,6 +59,19 @@ template <typename top, typename... specs> struct compile_time_workspace {
     static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
                   "Error: attempt to use unregistered type");
     return p.get(allocator);
+  }
+
+  template <typename T>
+  constexpr decltype(auto) set_pointer(value::top_pointer e,
+                                       value::pointer<value::instance<T>> &&p) {
+    static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
+                  "Error: attempt to use unregistered type");
+    return e.set(std::move(p), single_allocator<T>());
+  }
+
+  template <typename T>
+  constexpr decltype(auto) upcast(value::pointer<value::instance<T>> &&p) {
+    return value::top_pointer{std::move(p), single_allocator<T>()};
   }
 };
 } // namespace ctctx

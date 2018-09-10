@@ -65,10 +65,9 @@ struct varref {
 };
 
 template <std::size_t max_str_size>
-struct parser
-    : public ctctx::compile_time_workspace<program, statement, expression, sequence, skip,
-                               declare, assign, Return, constant<std::size_t>,
-                               binop<'+'>, varref> {
+struct parser : public ctctx::compile_time_workspace<
+                    program, statement, expression, sequence, skip, declare,
+                    assign, Return, constant<std::size_t>, binop<'+'>, varref> {
 private:
   using string_length = std::integral_constant<std::size_t, max_str_size>;
   using str_t = char const[string_length::value + 1];
@@ -82,13 +81,13 @@ private:
     str_nc operands[2] = {{0}};
     last_split('+', _in, operands);
     ct<expression> ret;
-    (MATCH(ret,expr){
+    (MATCH(ret, expr) {
       auto dec = allocate<binop<'+'>>();
-      (MATCH(deref(dec), l, r){
+      (MATCH(deref(dec), l, r) {
         l = parse_expression(operands[0]);
         r = parse_expression(operands[1]);
       });
-      expr.set(std::move(dec), single_allocator<binop<'+'>>());
+      expr = upcast(std::move(dec));
     });
     return ret;
   }
@@ -100,7 +99,7 @@ private:
     (MATCH(ret, expr) {
       auto dec = allocate<constant<std::size_t>>();
       ASSIGN_FIRST(deref(dec), c, parse_int(in));
-      expr.set(std::move(dec), single_allocator<constant<std::size_t>>());
+      expr = upcast(std::move(dec));
     });
     return ret;
   }
@@ -109,10 +108,10 @@ private:
   constexpr ct<expression> parse_varref(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    (MATCH(ret,expr) {
+    (MATCH(ret, expr) {
       auto dec = allocate<varref>();
       (MATCH(deref(dec), str) { trim(str.strbuf, in); });
-      expr.set(std::move(dec), single_allocator<varref>());
+      expr = upcast(std::move(dec));
     });
     return ret;
   }
@@ -144,10 +143,8 @@ private:
       auto dec = allocate<Return>();
       str_nc ret_expr = {0};
       remove_first_word(ret_expr, str);
-      (MATCH(deref(dec), expr) {
-        expr = parse_expression(ret_expr);
-      });
-      stmt.set(std::move(dec), single_allocator<Return>());
+      (MATCH(deref(dec), expr) { expr = parse_expression(ret_expr); });
+      stmt = upcast(std::move(dec));
     });
     return ret;
   }
@@ -169,7 +166,7 @@ private:
         expr = parse_expression(string_bufs[1]);
         body = parse_statement(let_components[1]);
       });
-      stmt.set(std::move(dec), single_allocator<declare>());
+      stmt = upcast(std::move(dec));
     });
     return ret;
   }
@@ -185,7 +182,7 @@ private:
         trim(l.strbuf, string_bufs[0]);
         r = parse_expression(string_bufs[1]);
       });
-      stmt.set(std::move(dec), single_allocator<assign>());
+      stmt = upcast(std::move(dec));
     });
     return ret;
   }
@@ -201,7 +198,7 @@ private:
         fst = parse_statement(string_bufs[0]);
         rst = parse_statement(string_bufs[1]);
       });
-      stmt.set(std::move(dec), single_allocator<sequence>());
+      stmt = upcast(std::move(dec));
     });
     return ret;
   }
@@ -248,24 +245,23 @@ std::ostream &operator<<(std::ostream &o, const instance<i, v...> &o2) {
 template <typename i, typename... v>
 std::ostream &
 _print(std::ostream &o,
-       const instance<program, instance<statement, instance<i, v...>>> &_i) {
+       const instance<program, instance<statement, instance<i, v...>>> &) {
   return print(o, instance<i, v...>{});
 }
 
 template <typename i, typename... v>
 std::ostream &_print(std::ostream &o,
-                     const instance<statement, instance<i, v...>> &_i) {
+                     const instance<statement, instance<i, v...>> &) {
   return print(o, instance<i, v...>{});
 }
 
 template <typename i, typename... v>
 std::ostream &_print(std::ostream &o,
-                     const instance<expression, instance<i, v...>> &_i) {
+                     const instance<expression, instance<i, v...>> &) {
   return print(o, instance<i, v...>{});
 }
 
-std::ostream &_print(std::ostream &o,
-                     const instance<expression, null_type> &_i) {
+std::ostream &_print(std::ostream &o, const instance<expression, null_type> &) {
   return print(o, null_type{});
 }
 
@@ -348,8 +344,4 @@ struct convert_again {
 using step2 = CONVERT_T(convert_again);
 static_assert(std::is_same_v<step1, step2>, "Sanity check");
 
-int main() {
-  constexpr parser<28> parsed{"var x = 3 + 5, x + x, 7 + 8"};
-  std::cout << &parsed.parsed << std::endl;
-  type_printer::print<step1>(std::cout) << std::endl;
-}
+int main() { type_printer::print<step1>(std::cout) << std::endl; }
