@@ -97,7 +97,7 @@ private:
     ct<expression> ret;
     (MATCH(ret, expr) {
       auto dec = allocate<constant<std::size_t>>();
-      ASSIGN_FIRST(deref(dec), c, parse_int(in));
+      ASSIGN_SINGLE(deref(dec), c, parse_int(in));
       expr = upcast(std::move(dec));
     });
     return ret;
@@ -142,7 +142,7 @@ private:
       auto dec = allocate<Return>();
       str_nc ret_expr = {0};
       remove_first_word(ret_expr, str);
-      ASSIGN_FIRST(deref(dec), expr, parse_expression(ret_expr));
+      ASSIGN_SINGLE(deref(dec), expr, parse_expression(ret_expr));
       stmt = upcast(std::move(dec));
     });
     return ret;
