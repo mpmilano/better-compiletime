@@ -66,7 +66,7 @@ struct varref {
 
 template <std::size_t max_str_size>
 struct parser
-    : public ctctx::value_info<program, statement, expression, sequence, skip,
+    : public ctctx::compile_time_workspace<program, statement, expression, sequence, skip,
                                declare, assign, Return, constant<std::size_t>,
                                binop<'+'>, varref> {
 private:

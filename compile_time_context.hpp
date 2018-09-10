@@ -22,15 +22,15 @@ template <typename T, typename A> constexpr decltype(auto) allocate(A &&a) {
   return a.template allocate<value::convert_to_instance_t<T>>();
 }
 
-template <typename top, typename... specs> struct value_info {
+template <typename top, typename... specs> struct compile_time_workspace {
   using Allocator = ::compile_time::ctctx::Allocator<top, specs...>;
   Allocator allocator{};
   template <typename T> using ct = value::convert_to_instance_t<T>;
-  constexpr value_info() = default;
-  constexpr value_info(const value_info &) = default;
-  constexpr value_info(value_info &&) = default;
-  constexpr value_info &operator=(const value_info &) = default;
-  constexpr value_info &operator=(value_info &&) = default;
+  constexpr compile_time_workspace() = default;
+  constexpr compile_time_workspace(const compile_time_workspace &) = default;
+  constexpr compile_time_workspace(compile_time_workspace &&) = default;
+  constexpr compile_time_workspace &operator=(const compile_time_workspace &) = default;
+  constexpr compile_time_workspace &operator=(compile_time_workspace &&) = default;
 
   template <typename T> constexpr decltype(auto) allocate() {
     static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
