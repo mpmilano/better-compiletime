@@ -332,7 +332,7 @@ struct convert_parsed {
   constexpr convert_parsed() = default;
 };
 
-using step1 = CONVERT_T(convert_parsed);/*
+using step1 = CONVERT_T(convert_parsed);
 struct convert_again {
   static const constexpr DECT(parse_trial()) allocator{
       convert_to_value<DECT(parse_trial()), step1>()};
@@ -342,6 +342,6 @@ struct convert_again {
 };
 using step2 = CONVERT_T(convert_again);
 static_assert(std::is_same_v<step1, step2>, "Sanity check");
-*/
+
 int main() { type_printer::print<step1>(std::cout) << std::endl; }
 
