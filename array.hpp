@@ -1,133 +1,113 @@
 #pragma once
 #include <cassert>
-#include <utility>
 #include <stdexcept>
+#include <utility>
 
 namespace compile_time {
 
-template<typename T, std::size_t size> struct array;
+template <typename T, std::size_t size> struct array;
 
-template<typename T, typename array> struct iterator{
-		array &arr;
-		std::size_t index;
-		constexpr iterator(array& arr, std::size_t index)
-			:arr(arr),index(index){}
+template <typename T, typename array> struct iterator {
+  array &arr;
+  std::size_t index;
+  constexpr iterator(array &arr, std::size_t index) : arr(arr), index(index) {}
 
-		constexpr iterator operator++(){
-			++index;
-			return *this;
-		}
-		constexpr bool operator==(const iterator& o){
-			//TODO: this is obviously only fine for range-based for.
-			return (index == o.index);
-		}
+  constexpr iterator operator++() {
+    ++index;
+    return *this;
+  }
+  constexpr bool operator==(const iterator &o) {
+    // TODO: this is obviously only fine for range-based for.
+    return (index == o.index);
+  }
 
-		template<typename A>
-		constexpr bool operator!=(const A& a){
-			return !operator==(a);
-		}
-		
-		constexpr T& operator*() {
-			return arr[index];
-		}
+  template <typename A> constexpr bool operator!=(const A &a) {
+    return !operator==(a);
+  }
+
+  constexpr T &operator*() { return arr[index]; }
 };
 
-template<typename T> struct array<T,1>{
-	T hd[1];
-	using iterator = compile_time::iterator<T,array>;
-	constexpr auto size() const {
-		return size;
-	}
-	constexpr T& operator[](std::size_t i){
-		(void)i;
-		assert(i == 0);
-		return hd[0];
-	}
+template <typename T> struct array<T, 1> {
+  T hd[1];
+  using iterator = compile_time::iterator<T, array>;
+  constexpr auto size() const { return size; }
+  constexpr T &operator[](std::size_t i) {
+    (void)i;
+    assert(i == 0);
+    return hd[0];
+  }
 
-	constexpr const T& operator[](std::size_t i) const {
-		(void)i;
-		assert(i == 0);
-		return hd[0];
-	}
-	
-	constexpr T* ptr(std::size_t i){
-		(void) i;
-		assert(i == 0);
-		return hd;
-	}
+  constexpr const T &operator[](std::size_t i) const {
+    (void)i;
+    assert(i == 0);
+    return hd[0];
+  }
 
-	constexpr const T* ptr(std::size_t i) const {
-		(void) i;
-		assert(i == 0);
-		return hd;
-	}
-	
-	constexpr iterator begin(){
-		return iterator{*this,0};
-	}
-	constexpr iterator end() {
-		return iterator{*this,1};
-	}
+  constexpr T *ptr(std::size_t i) {
+    (void)i;
+    assert(i == 0);
+    return hd;
+  }
 
-	constexpr array(array&& o):hd{{std::move(o.hd[0])}}{}
-	constexpr array(){}
+  constexpr const T *ptr(std::size_t i) const {
+    (void)i;
+    assert(i == 0);
+    return hd;
+  }
+
+  constexpr iterator begin() { return iterator{*this, 0}; }
+  constexpr iterator end() { return iterator{*this, 1}; }
+
+  constexpr array(array &&o) : hd{{std::move(o.hd[0])}} {}
+  constexpr array() {}
 };
 
-template<typename T, std::size_t _size> struct array {
-	T hd[1];
-	array<T,_size-1> rest;
+template <typename T, std::size_t _size> struct array {
+  T hd[1];
+  array<T, _size - 1> rest;
 
-	using iterator = compile_time::iterator<T,array>;
+  using iterator = compile_time::iterator<T, array>;
 
-	constexpr auto size() const {
-		return size;
-	}
+  constexpr auto size() const { return size; }
 
+  constexpr T *ptr(std::size_t i) {
+    if (i == 0)
+      return hd;
+    else {
+      if (i < _size) {
+        return rest.ptr(i - 1);
+      } else {
+        assert(false && "error: index out of bounds");
+        throw std::out_of_range{
+            "Error: index out of bounds (constexpr array.hpp)"};
+      }
+    }
+  }
 
-	constexpr T* ptr(std::size_t i){
-		if (i == 0) return hd;
-		else {
-			if (i < _size){
-				return rest.ptr(i-1);
-			}
-			else {
-				assert(false && "error: index out of bounds");
-				throw std::out_of_range{"Error: index out of bounds (constexpr array.hpp)"};
-			}
-		}
-	}
+  constexpr const T *ptr(std::size_t i) const {
+    if (i == 0)
+      return hd;
+    else {
+      if (i < _size) {
+        return rest.ptr(i - 1);
+      } else {
+        assert(false && "error: index out of bounds");
+        throw std::out_of_range{
+            "Error: index out of bounds (constexpr array.hpp)"};
+      }
+    }
+  }
 
-	constexpr const T* ptr(std::size_t i) const {
-		if (i == 0) return hd;
-		else {
-			if (i < _size){
-				return rest.ptr(i-1);
-			}
-			else {
-				assert(false && "error: index out of bounds");
-				throw std::out_of_range{"Error: index out of bounds (constexpr array.hpp)"};
-			}
-		}
-	}
+  constexpr T &operator[](std::size_t i) { return *ptr(i); }
 
-	constexpr T& operator[](std::size_t i){
-		return *ptr(i);
-	}
+  constexpr const T &operator[](std::size_t i) const { return *ptr(i); }
 
-	constexpr const T& operator[](std::size_t i) const {
-		return *ptr(i);
-	}
+  constexpr iterator begin() { return iterator{*this, 0}; }
+  constexpr iterator end() { return iterator{*this, _size}; }
 
-
-	constexpr iterator begin(){
-		return iterator{*this,0};
-	}
-	constexpr iterator end() {
-		return iterator{*this,_size};
-	}
-
-	constexpr array(array&& o)
-		:hd{{std::move(o.hd[0])}},rest(std::move(o.rest)) {}
-	constexpr array(){}
+  constexpr array(array &&o)
+      : hd{{std::move(o.hd[0])}}, rest(std::move(o.rest)) {}
+  constexpr array() {}
 };
-}
+} // namespace compile_time

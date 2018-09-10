@@ -2,6 +2,4 @@
 
 using namespace compile_time;
 
-int main(){
-    Allocator<5,int,int> a;
-}
+int main() { Allocator<5, int, int> a; }
