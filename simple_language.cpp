@@ -82,9 +82,9 @@ private:
     str_nc operands[2] = {{0}};
     last_split('+', _in, operands);
     ct<expression> ret;
-    ret.match([&](value::top_pointer & expr) constexpr {
+    (MATCH(ret,expr){
       auto dec = allocate<binop<'+'>>();
-      deref(dec).match([&](auto &l, auto &r) constexpr {
+      (MATCH(deref(dec), l, r){
         l = parse_expression(operands[0]);
         r = parse_expression(operands[1]);
       });
@@ -97,9 +97,9 @@ private:
   constexpr ct<expression> parse_constant(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    ret.match([&](value::top_pointer & expr) constexpr {
+    (MATCH(ret, expr) {
       auto dec = allocate<constant<std::size_t>>();
-      deref(dec).match([&](auto &c) constexpr { c = parse_int(in); });
+      (MATCH(deref(dec), c) { c = parse_int(in); });
       expr.set(std::move(dec), single_allocator<constant<std::size_t>>());
     });
     return ret;
@@ -109,9 +109,9 @@ private:
   constexpr ct<expression> parse_varref(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    ret.match([&](value::top_pointer & expr) constexpr {
+    (MATCH(ret,expr) {
       auto dec = allocate<varref>();
-      deref(dec).match([&](auto &str) constexpr { trim(str.strbuf, in); });
+      (MATCH(deref(dec), str) { trim(str.strbuf, in); });
       expr.set(std::move(dec), single_allocator<varref>());
     });
     return ret;
@@ -140,11 +140,11 @@ private:
   constexpr ct<statement> parse_return(const fixed_cstr<str_size> &str) {
     using namespace mutils::cstring;
     ct<statement> ret;
-    ret.match([&](value::top_pointer & stmt) constexpr {
+    (MATCH(ret, stmt) {
       auto dec = allocate<Return>();
       str_nc ret_expr = {0};
       remove_first_word(ret_expr, str);
-      deref(dec).match([&](auto &expr) constexpr {
+      (MATCH(deref(dec), expr) {
         expr = parse_expression(ret_expr);
       });
       stmt.set(std::move(dec), single_allocator<Return>());
