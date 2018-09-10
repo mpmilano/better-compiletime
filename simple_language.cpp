@@ -34,7 +34,6 @@ struct sequence {
   statement rst;
 };
 
-struct skip {};
 
 struct declare {
   varname var;
@@ -66,7 +65,7 @@ struct varref {
 
 template <std::size_t max_str_size>
 struct parser : public ctctx::compile_time_workspace<
-                    program, statement, expression, sequence, skip, declare,
+                    program, statement, expression, sequence,  declare,
                     assign, Return, constant<std::size_t>, binop<'+'>, varref> {
 private:
   using string_length = std::integral_constant<std::size_t, max_str_size>;
@@ -333,7 +332,7 @@ struct convert_parsed {
   constexpr convert_parsed() = default;
 };
 
-using step1 = CONVERT_T(convert_parsed);
+using step1 = CONVERT_T(convert_parsed);/*
 struct convert_again {
   static const constexpr DECT(parse_trial()) allocator{
       convert_to_value<DECT(parse_trial()), step1>()};
@@ -343,5 +342,6 @@ struct convert_again {
 };
 using step2 = CONVERT_T(convert_again);
 static_assert(std::is_same_v<step1, step2>, "Sanity check");
-
+*/
 int main() { type_printer::print<step1>(std::cout) << std::endl; }
+
