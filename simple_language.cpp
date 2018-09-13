@@ -79,14 +79,10 @@ private:
     str_nc operands[2] = {{0}};
     last_split('+', _in, operands);
     ct<expression> ret;
-    (MATCH(ret, expr) {
-      auto dec = allocate<binop<'+'>>();
-      (MATCH(deref(dec), l, r) {
-        l = parse_expression(operands[0]);
-        r = parse_expression(operands[1]);
-      });
-      expr = upcast(std::move(dec));
-    });
+    auto dec = allocate<binop<'+'>>();
+    deref(dec).FIELD(left) = parse_expression(operands[0]);
+    deref(dec).FIELD(right) = parse_expression(operands[1]);
+    ret.FIELD(arg) = upcast(std::move(dec));
     return ret;
   }
 
@@ -94,11 +90,9 @@ private:
   constexpr ct<expression> parse_constant(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    (MATCH(ret, expr) {
-      auto dec = allocate<constant<std::size_t>>();
-      ASSIGN_SINGLE(deref(dec), c, parse_int(in));
-      expr = upcast(std::move(dec));
-    });
+    auto dec = allocate<constant<std::size_t>>();
+    deref(dec).FIELD(value) = parse_int(in);
+    ret.FIELD(arg) = upcast(std::move(dec));
     return ret;
   }
 
@@ -106,11 +100,9 @@ private:
   constexpr ct<expression> parse_varref(const fixed_cstr<str_size> &in) {
     using namespace mutils::cstring;
     ct<expression> ret;
-    (MATCH(ret, expr) {
-      auto dec = allocate<varref>();
-      (MATCH(deref(dec), str) { trim(str.strbuf, in); });
-      expr = upcast(std::move(dec));
-    });
+    auto dec = allocate<varref>();
+    trim(deref(dec).FIELD(var).strbuf, in);
+    ret.FIELD(arg) = upcast(std::move(dec));
     return ret;
   }
 
