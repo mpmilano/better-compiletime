@@ -152,10 +152,10 @@ constexpr auto convert_to_type_f(
     const typename compile_time_context<Allocator_holder>::Allocator
         &debug_allocator,
     maybe_error<T> const *const) {
-  (void)debug_allocator;
-  if constexpr (FValue{}.value.error_set) {
+  if constexpr (!FValue{}.value.error_set) {
     struct_wrap(ret, FValue{}.value.value);
-    return simple_wrapper<ret>{};
+    return convert_to_type_f<simple_wrapper<ret>, Allocator_holder>(
+        debug_allocator, &FValue{}.value.value);
   } else {
     struct_wrap(err, FValue{}.value.error);
     struct return_t {

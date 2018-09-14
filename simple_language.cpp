@@ -222,10 +222,21 @@ public:
       : parsed(parse_program(str)) {}
 };
 
+template <char... c>
+std::ostream &operator<<(std::ostream &o, const types::error<c...> &) {
+  constexpr const char str[sizeof...(c) + 1] = {c..., 0};
+  return o << str;
+}
+
 namespace type_printer {
 using namespace types;
 
 template <typename e> std::ostream &print(std::ostream &o, const e & = e{});
+
+template <char... c>
+std::ostream &_print(std::ostream &o, const types::error<c...> &e) {
+  return o << e;
+}
 
 template <typename i, typename... v>
 std::ostream &operator<<(std::ostream &o, const instance<i, v...> &o2) {

@@ -65,6 +65,14 @@ constexpr auto _convert_to_value(Allocator &, const mutils::String<str...> &s) {
   return s2;
 }
 
+template <typename Allocator, char... str>
+constexpr auto _convert_to_value(Allocator &, const types::error<str...> &s) {
+  error_t s2;
+  constexpr const char rstr[sizeof...(str) + 1] = {str..., 0};
+  mutils::cstring::str_cpy(s2.msg, rstr);
+  return s2;
+}
+
 template <typename A, typename B>
 constexpr auto convert_to_value(A &a, const B &b) {
   return _convert_to_value(a, b);

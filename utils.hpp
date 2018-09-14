@@ -57,6 +57,17 @@ template <typename T> struct maybe_error {
   error_t error{};
   bool error_set{false};
   T value{};
+  constexpr maybe_error() = default;
+  constexpr maybe_error &operator=(const T &t) {
+    error_set = false;
+    value = t;
+    return *this;
+  }
+  constexpr maybe_error &operator=(const error_t &e) {
+    error_set = true;
+    error = e;
+    return *this;
+  }
 };
 
 } // namespace compile_time
