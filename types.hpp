@@ -16,6 +16,7 @@ template <typename T, typename... Fields> struct instance {
   static_assert(sizeof...(Fields) == struct_size<T>,
                 "Error: incorrect number of fields");
   constexpr instance() = default;
+  static const constexpr bool all_ok{true};
 };
 struct null_type {
   constexpr null_type() = default;

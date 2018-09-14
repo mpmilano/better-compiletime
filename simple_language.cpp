@@ -206,8 +206,12 @@ private:
       return parse_assignment(in);
     } else if (first_word_is("return", in)) {
       return parse_return(in);
-    } else
+    } else {
+      fixed_str<1024> error_str{0};
+      combine_strings(error_str, "Failed to parse statement ", _in);
+      error(error_str);
       return ct<statement>{};
+    }
   }
 
 public:
@@ -324,7 +328,7 @@ using namespace simple_language;
   parser<mutils::cstring::str_len(#x) + 1> { #x }
 
 constexpr decltype(auto) parse_trial() {
-  return PARSE(var x = 0, var y = 4, x = x + y, return x).allocator;
+  return PARSE(var x = 0, var y = 4, x = x + y, 7, return x).allocator;
 }
 
 struct convert_parsed {
@@ -335,6 +339,7 @@ struct convert_parsed {
 };
 
 using step1 = CONVERT_T(convert_parsed);
+static_assert(step1::all_ok);
 struct convert_again {
   static const constexpr DECT(parse_trial()) allocator{
       convert_to_value<DECT(parse_trial()), step1>()};
