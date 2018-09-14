@@ -47,6 +47,18 @@ using type_at = DECT(type_at_f<i, in...>());
 
 template <typename T>
 inline constexpr std::size_t struct_size = boost::pfr::tuple_size<T>::value;
+
+struct error_t {
+  char msg[1024] = {0};
+  constexpr error_t() = default;
+};
+
+template <typename T> struct maybe_error {
+  error_t error{};
+  bool error_set{false};
+  T value{};
+};
+
 } // namespace compile_time
 
 namespace mutils {

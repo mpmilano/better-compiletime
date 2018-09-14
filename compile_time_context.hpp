@@ -1,6 +1,7 @@
 #pragma once
 #include "allocator.hpp"
 #include "auto_definition.hpp"
+#include "mutils/cstring.hpp"
 #include "utils.hpp"
 
 namespace compile_time {
@@ -23,9 +24,13 @@ template <typename T, typename A> constexpr decltype(auto) allocate(A &&a) {
 }
 
 template <typename top, typename... specs> struct compile_time_workspace {
-  using Allocator = ::compile_time::ctctx::Allocator<top, specs...>;
-  Allocator allocator{};
   template <typename T> using ct = value::convert_to_instance_t<T>;
+
+  using Allocator =
+      ::compile_time::ctctx::Allocator<maybe_error<ct<top>>, specs...>;
+  Allocator allocator{};
+  DECT(allocator.top) & value{allocator.top};
+
   constexpr compile_time_workspace() = default;
   constexpr compile_time_workspace(const compile_time_workspace &) = default;
   constexpr compile_time_workspace(compile_time_workspace &&) = default;
@@ -72,6 +77,17 @@ template <typename top, typename... specs> struct compile_time_workspace {
   template <typename T>
   constexpr decltype(auto) upcast(value::pointer<value::instance<T>> &&p) {
     return value::top_pointer{std::move(p), single_allocator<T>()};
+  }
+
+  template <typename T> constexpr decltype(auto) set_return(T &&t) {
+    allocator.top.value = t;
+  }
+
+  constexpr ct<top> &current_return() { return allocator.top.value; }
+
+  constexpr void error(const char *str) {
+    mutils::cstring::str_cpy(allocator.top.error.msg, str);
+    allocator.top.error_set = true;
   }
 };
 } // namespace ctctx

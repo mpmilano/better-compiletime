@@ -212,10 +212,10 @@ private:
 
 public:
   constexpr ct<program> &parse_program(const fixed_cstr<max_str_size> &str) {
-    allocator.top.match([ this, str ](ct<statement> & body) constexpr {
+    current_return().match([ this, str ](ct<statement> & body) constexpr {
       body = parse_statement(str);
     });
-    return allocator.top;
+    return current_return();
   }
   const ct<program> parsed;
   constexpr parser(const fixed_cstr<max_str_size> &str)

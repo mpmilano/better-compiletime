@@ -24,6 +24,26 @@ struct null_type {
 // {template<typename... Fields> using type = instance<T, Fields...>;};
 template <typename T, T> struct raw_value { constexpr raw_value() = default; };
 
+template <char... str> struct error {
+  static constexpr const char msg[sizeof...(str) + 1] = {str..., 0};
+};
+
+template <char... c>
+constexpr auto error_from_ctstring(const mutils::String<c...> &) {
+  return error<c...>{};
+}
+
+template <typename FV> constexpr auto error_from_value_error_f() {
+  struct i {
+    constexpr i() = default;
+    constexpr const char *operator()() const { return FV{}().msg; }
+  };
+  return error_from_ctstring(mutils::cstring::build_type_string<i>());
+}
+
+template <typename T>
+using error_from_value_error = DECT(error_from_value_error_f<T>());
+
 template <typename T> struct wrapped_type {
   constexpr wrapped_type() = default;
 };

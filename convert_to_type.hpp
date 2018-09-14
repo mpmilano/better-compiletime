@@ -146,6 +146,26 @@ constexpr auto convert_to_type_f(
   };
   return return_t{};
 }
+
+template <typename FValue, typename Allocator_holder, typename T>
+constexpr auto convert_to_type_f(
+    const typename compile_time_context<Allocator_holder>::Allocator
+        &debug_allocator,
+    maybe_error<T> const *const) {
+  (void)debug_allocator;
+  if constexpr (FValue{}.value.error_set) {
+    struct_wrap(ret, FValue{}.value.value);
+    return simple_wrapper<ret>{};
+  } else {
+    struct_wrap(err, FValue{}.value.error);
+    struct return_t {
+      types::error_from_value_error<err> value{};
+      constexpr return_t() = default;
+    };
+    return return_t{};
+  }
+}
+
 } // namespace value_to_type
 namespace ctctx {
 template <typename Allocator_holder>

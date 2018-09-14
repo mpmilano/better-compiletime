@@ -16,6 +16,11 @@ template <typename T> using pointer = allocated_ref<T>;
 } // namespace value
 
 namespace specification {
+
+template <typename T> struct convert_to_instance<maybe_error<T>> {
+  using type = maybe_error<T>;
+};
+
 template <typename T> struct convert_to_instance<list<T>> {
   using type = value::list<T>;
 };
