@@ -328,7 +328,7 @@ using namespace simple_language;
   parser<mutils::cstring::str_len(#x) + 1> { #x }
 
 constexpr decltype(auto) parse_trial() {
-  return PARSE(var x = 0, var y = 4, x = x + y, 7, return x).allocator;
+  return PARSE(var x = 0, var y = 4, x = x + y, return x).allocator;
 }
 
 struct convert_parsed {
