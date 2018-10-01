@@ -67,6 +67,20 @@ template <typename top, typename... specs> struct compile_time_workspace {
   }
 
   template <typename T>
+  constexpr decltype(auto) deref_as(value::top_pointer &p) {
+    static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
+                  "Error: attempt to use unregistered type");
+    using target = value::instance<T>;
+    assert(p.template is_this_type<target>(allocator));
+    auto &sa = allocator.template as_single_allocator<target>();
+    return p.get(sa);
+  }
+
+  template <typename T> constexpr bool is(value::top_pointer &p) const {
+    return p.template is_this_type<value::instance<T>>(allocator);
+  }
+
+  template <typename T>
   constexpr decltype(auto) set_pointer(value::top_pointer e,
                                        value::pointer<value::instance<T>> &&p) {
     static_assert(((std::is_same_v<specs, T>)+... + 0) == 1,
