@@ -49,6 +49,11 @@ struct Return {
   expression value;
 };
 
+struct list_test {
+  specification::list<std::size_t> values;
+  statement payload;
+};
+
 // expressions
 
 template <typename Constant_t> struct constant { Constant_t value; };
@@ -63,9 +68,10 @@ struct varref {
 };
 
 template <std::size_t max_str_size>
-struct parser : public ctctx::compile_time_workspace<
-                    program, statement, expression, sequence, declare, assign,
-                    Return, constant<std::size_t>, binop<'+'>, varref> {
+struct parser
+    : public ctctx::compile_time_workspace<
+          program, statement, expression, sequence, declare, assign, Return,
+          constant<std::size_t>, binop<'+'>, varref, list_test> {
 private:
   using string_length = std::integral_constant<std::size_t, max_str_size>;
   using str_t = char const[string_length::value + 1];
@@ -217,7 +223,11 @@ private:
 public:
   constexpr ct<program> &parse_program(const fixed_cstr<max_str_size> &str) {
     current_return().match([ this, str ](ct<statement> & body) constexpr {
-      body = parse_statement(str);
+      auto ptr = allocate<list_test>();
+      deref(ptr).FIELD(payload) = parse_statement(str);
+      for (auto i = 0u; i < 10u; ++i)
+        deref(ptr).FIELD(values).grow() = 5;
+      body.FIELD(body) = upcast(std::move(ptr));
     });
     return current_return();
   }

@@ -73,6 +73,11 @@ constexpr auto _convert_to_value(Allocator &, const types::error<str...> &s) {
   return s2;
 }
 
+template <typename Allocator, typename... T>
+constexpr auto _convert_to_value(Allocator &, const types::list<T...> &s) {
+  // TODO: left off here.
+}
+
 template <typename A, typename B>
 constexpr auto convert_to_value(A &a, const B &b) {
   return _convert_to_value(a, b);

@@ -6,7 +6,18 @@
 namespace compile_time {
 
 namespace value {
-template <typename T> struct list { constexpr list() = default; };
+template <typename T> struct list {
+  std::size_t size = {0};
+  using stored = typename specification::convert_to_instance<T>::type;
+  stored values[256] = {stored{}};
+  constexpr list() = default;
+  constexpr auto &grow() {
+    assert(size < 256);
+    auto &ret = values[size];
+    ++size;
+    return ret;
+  }
+};
 struct string {
   constexpr string() = default;
   char strbuf[1028] = {};

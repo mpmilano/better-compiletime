@@ -9,7 +9,13 @@ template <typename T> struct convert_to_type;
 }
 namespace types {
 
-template <typename...> struct list { constexpr list() = default; };
+template <typename... T> struct list {
+  constexpr list() = default;
+  template <typename... U>
+  static constexpr list<T..., U...> append(const list<U...> &) {
+    return list<T..., U...>{};
+  }
+};
 template <char...> struct string { constexpr string() = default; };
 
 template <typename T, typename... Fields> struct instance {

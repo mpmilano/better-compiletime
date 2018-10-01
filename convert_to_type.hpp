@@ -133,18 +133,33 @@ constexpr auto convert_to_type_f(
   (void)debug_allocator;
 }
 
-template <typename FValue, typename Allocator_holder, typename T>
+template <typename FValue, typename Allocator_holder, typename T,
+          std::size_t offset>
+constexpr auto
+convert_list(const typename compile_time_context<Allocator_holder>::Allocator
+                 &debug_allocator = Allocator_holder::allocator) {
+  if constexpr (offset == FValue{}.value.size) {
+    return types::list<>{};
+  } else {
+    using ctcx = compile_time_context<Allocator_holder>;
+    struct_wrap(converted, FValue::value.values[offset]);
+    using wrapped = simple_wrapper<converted>;
+    using curr = typename ctcx::template convert_to_type<wrapped>;
+    auto next =
+        convert_list<FValue, Allocator_holder, T, offset + 1>(debug_allocator);
+    return types::list<curr>::append(next);
+  }
+}
+
+template <typename FValue, typename Allocator_holder, typename T,
+          std::size_t offset = 0>
 constexpr auto convert_to_type_f(
     const typename compile_time_context<Allocator_holder>::Allocator
         &debug_allocator,
-    list<T> const *const) {
-  // TODO: actually read the list contents.
-  (void)debug_allocator;
-  struct return_t {
-    types::list<> value{};
-    constexpr return_t() = default;
-  };
-  return return_t{};
+    list<T> const *const,
+    std::integral_constant<std::size_t, offset> * = nullptr) {
+  struct_wrap(ret, convert_list<FValue, Allocator_holder, T, offset>());
+  return simple_wrapper<ret>{};
 }
 
 template <typename FValue, typename Allocator_holder, typename T>
