@@ -88,6 +88,7 @@ struct list_helper {
                   "Error: list expected but not encountered.");
     expected_return l;
     (fill_in_field(a, l.values[indices], T{}), ...);
+    l.size = sizeof...(T);
     return l;
   }
 };

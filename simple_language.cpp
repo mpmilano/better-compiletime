@@ -372,7 +372,7 @@ struct convert_again {
   constexpr convert_again() = default;
 };
 using step2 = CONVERT_T(convert_again);
-// static_assert(std::is_same_v<step1, step2>, "Sanity check");
+static_assert(std::is_same_v<step1, step2>, "Sanity check");
 
 int main() {
   type_printer::print<step1>(std::cout) << std::endl << std::endl << std::endl;
