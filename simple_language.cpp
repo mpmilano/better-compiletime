@@ -282,9 +282,23 @@ std::ostream &_print(std::ostream &o, const instance<expression, null_type> &) {
 
 std::ostream &_print(std::ostream &o, const null_type &) { return o << "NULL"; }
 
+template <typename payload, typename... values>
+std::ostream &_print(std::ostream &o,
+                     const instance<list_test, list<values...>, payload> &) {
+  o << "[";
+  (print(o, values{}), ...);
+  o << "]\n";
+  return print(o, payload{});
+}
+
 template <typename T, T v>
 std::ostream &_print(std::ostream &o,
                      const instance<constant<T>, raw_value<T, v>> &) {
+  return o << v;
+}
+
+template <typename T, T v>
+std::ostream &_print(std::ostream &o, const raw_value<T, v> &) {
   return o << v;
 }
 
@@ -358,6 +372,9 @@ struct convert_again {
   constexpr convert_again() = default;
 };
 using step2 = CONVERT_T(convert_again);
-static_assert(std::is_same_v<step1, step2>, "Sanity check");
+// static_assert(std::is_same_v<step1, step2>, "Sanity check");
 
-int main() { type_printer::print<step1>(std::cout) << std::endl; }
+int main() {
+  type_printer::print<step1>(std::cout) << std::endl << std::endl << std::endl;
+  type_printer::print<step2>(std::cout) << std::endl;
+}
