@@ -12,7 +12,7 @@ template <typename T> struct list {
   stored values[256] = {stored{}};
   constexpr list() = default;
   constexpr auto &grow() {
-    assert(size < 256);
+    assert(size < 255);
     auto &ret = values[size];
     ++size;
     return ret;

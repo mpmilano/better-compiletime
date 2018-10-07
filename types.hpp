@@ -23,6 +23,7 @@ template <typename T, typename... Fields> struct instance {
                 "Error: incorrect number of fields");
   constexpr instance() = default;
   static const constexpr bool all_ok{true};
+  static const constexpr bool is_error{false};
 };
 struct null_type {
   constexpr null_type() = default;
@@ -33,7 +34,13 @@ template <typename T, T> struct raw_value { constexpr raw_value() = default; };
 
 template <char... str> struct error {
   static constexpr const char msg[sizeof...(str) + 1] = {str..., 0};
+  static const constexpr bool is_error{true};
 };
+
+template <char... str>
+std::ostream &operator<<(std::ostream &o, const error<str...> &e) {
+  return o << e.msg;
+}
 
 template <char... c>
 constexpr auto error_from_ctstring(const mutils::String<c...> &) {
