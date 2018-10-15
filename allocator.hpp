@@ -8,12 +8,12 @@
 
 namespace compile_time {
 
-template <std::size_t size, typename T> struct SingleAllocator {
+template <std::size_t size, typename T, typename Allocator>
+struct SingleAllocator {
   const std::size_t allocator_index;
   array<T, size> data;
   bool open_slots[size];
 
-  template <typename Allocator>
   constexpr SingleAllocator(SingleAllocator &&o, Allocator &)
       : allocator_index(
             Allocator::template get_allocator_index<SingleAllocator>()),
@@ -23,7 +23,6 @@ template <std::size_t size, typename T> struct SingleAllocator {
       open_slots[i] = o.open_slots[i];
     }
   }
-  template <typename Allocator>
   constexpr SingleAllocator(const Allocator &)
       : allocator_index(
             Allocator::template get_allocator_index<SingleAllocator>()),
@@ -62,54 +61,59 @@ public:
 };
 
 template <typename T>
-template <std::size_t s>
-constexpr allocated_ref<T>::allocated_ref(SingleAllocator<s, T> &sa)
+template <std::size_t s, typename Allocator>
+constexpr allocated_ref<T>::allocated_ref(SingleAllocator<s, T, Allocator> &sa)
     : indx(sa._allocate() + 1) {}
 
 template <typename T>
-template <std::size_t s>
-constexpr void allocated_ref<T>::free(SingleAllocator<s, T> &sa) {
+template <std::size_t s, typename Allocator>
+constexpr void allocated_ref<T>::free(SingleAllocator<s, T, Allocator> &sa) {
   sa.free(indx);
 }
 
-template <typename T, std::size_t s>
-constexpr erased_ref::erased_ref(SingleAllocator<s, T> &sa)
+template <typename T, std::size_t s, typename Allocator>
+constexpr erased_ref::erased_ref(SingleAllocator<s, T, Allocator> &sa)
     : indx(sa._allocate() + 1) {}
 
-template <typename T, std::size_t s>
-constexpr void erased_ref::free(SingleAllocator<s, T> &sa) {
+template <typename T, std::size_t s, typename Allocator>
+constexpr void erased_ref::free(SingleAllocator<s, T, Allocator> &sa) {
   sa.free(indx);
 }
 
 template <std::size_t s, typename Top, typename... Subs>
-struct Allocator : public SingleAllocator<s, Subs>... {
+struct Allocator
+    : public SingleAllocator<s, Subs, Allocator<s, Top, Subs...>>... {
 
   Top top;
   static constexpr const std::size_t size = s;
 
-  constexpr Allocator() : SingleAllocator<s, Subs>(*this)... {}
+  constexpr Allocator() : SingleAllocator<s, Subs, Allocator>(*this)... {}
 
   constexpr Allocator(Allocator &&o)
-      : SingleAllocator<s, Subs>(std::move(o), *this)...,
+      : SingleAllocator<s, Subs, Allocator>(std::move(o), *this)...,
         top(std::move(o.top)) {}
 
   template <typename SA> static constexpr std::size_t get_allocator_index() {
-    return index_of<SA, SingleAllocator<s, Subs>...>;
+    return index_of<SA, SingleAllocator<s, Subs, Allocator>...>;
   }
 
-  template <typename T> constexpr SingleAllocator<s, T> &get() { return *this; }
-
-  template <typename sub>
-  constexpr SingleAllocator<s, sub> &as_single_allocator() {
+  template <typename T> constexpr SingleAllocator<s, T, Allocator> &get() {
     return *this;
   }
 
   template <typename sub>
-  constexpr const SingleAllocator<s, sub> &as_single_allocator() const {
+  constexpr SingleAllocator<s, sub, Allocator> &as_single_allocator() {
     return *this;
   }
 
-  template <typename T> constexpr const SingleAllocator<s, T> &get() const {
+  template <typename sub>
+  constexpr const SingleAllocator<s, sub, Allocator> &
+  as_single_allocator() const {
+    return *this;
+  }
+
+  template <typename T>
+  constexpr const SingleAllocator<s, T, Allocator> &get() const {
     return *this;
   }
 
@@ -131,15 +135,16 @@ struct Allocator : public SingleAllocator<s, Subs>... {
 template <typename T, std::size_t s, typename Top, typename... Subs>
 std::ostream &print(std::ostream &o, const allocated_ref<T> &ptr,
                     const Allocator<s, Top, Subs...> &_allocator) {
-  const SingleAllocator<s, T> &allocator = _allocator;
+  const SingleAllocator<s, T, Allocator<s, Top, Subs...>> &allocator =
+      _allocator;
   o << "&(";
   print(o, ptr.get(allocator), allocator);
   return o << ")";
 }
 
-template <typename T, std::size_t s>
+template <typename T, std::size_t s, typename Allocator>
 std::ostream &print(std::ostream &o, const allocated_ref<T> &ptr,
-                    const SingleAllocator<s, T> &allocator) {
+                    const SingleAllocator<s, T, Allocator> &allocator) {
   o << "&(";
   print(o, ptr.get(allocator), allocator);
   return o << ")";
@@ -148,14 +153,15 @@ std::ostream &print(std::ostream &o, const allocated_ref<T> &ptr,
 template <typename T, std::size_t s, typename Top, typename... Subs>
 std::ostream &pretty_print(std::ostream &o, const allocated_ref<T> &ptr,
                            const Allocator<s, Top, Subs...> &_allocator) {
-  const SingleAllocator<s, T> &allocator = _allocator;
+  const SingleAllocator<s, T, Allocator<s, Top, Subs...>> &allocator =
+      _allocator;
   pretty_print(o, ptr.get(allocator), allocator);
   return o;
 }
 
-template <typename T, std::size_t s>
+template <typename T, std::size_t s, typename Allocator>
 std::ostream &pretty_print(std::ostream &o, const allocated_ref<T> &ptr,
-                           const SingleAllocator<s, T> &allocator) {
+                           const SingleAllocator<s, T, Allocator> &allocator) {
   pretty_print(o, ptr.get(allocator), allocator);
   return o;
 }
