@@ -10,5 +10,5 @@ constexpr int test() {
 
 int main() {
   constexpr int test_result = test();
-  static_assert(test_result == 4);
+  static_assert(test_result == 4,"");
 }
