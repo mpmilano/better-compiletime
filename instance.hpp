@@ -31,14 +31,8 @@ template <typename client> struct instance : public definition<client> {
   using field_index_sequence = std::make_index_sequence<num_fields::value>;
   using client_t = client;
 
-  constexpr auto &operator=(const instance &o) {
-    definition<client>::operator=(o);
-    return *this;
-  }
-  constexpr auto &operator==(instance &&o) {
-    definition<client>::operator=(o);
-    return *this;
-  }
+  constexpr instance &operator=(const instance &o) = default;
+  constexpr instance &operator=(instance &&o) = default;
 
 private:
   // field offset translations

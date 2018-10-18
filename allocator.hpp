@@ -17,7 +17,7 @@ struct SingleAllocator {
   constexpr SingleAllocator(SingleAllocator &&o, Allocator &a)
       : allocator_index(a.template get_allocator_index<SingleAllocator>()),
         parent(a) {}
-  constexpr SingleAllocator(const Allocator &a)
+  constexpr SingleAllocator(Allocator &a)
       : allocator_index(a.template get_allocator_index<SingleAllocator>()),
         parent(a) {}
 

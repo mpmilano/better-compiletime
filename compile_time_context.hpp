@@ -5,7 +5,7 @@
 #include "utils.hpp"
 
 namespace compile_time {
-constexpr inline std::size_t allocator_size = 25;
+constexpr inline std::size_t allocator_size = 1000;
 namespace ctctx {
 template <typename top, typename... specs>
 using Allocator =
