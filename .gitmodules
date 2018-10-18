@@ -1,4 +1,4 @@
 [submodule "mutils"]
 	path = mutils
-	url = git@github.com:mpmilano/mutils
+	url = https://github.com/mpmilano/mutils.git
 	branch = better-compiletime

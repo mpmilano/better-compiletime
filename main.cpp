@@ -4,7 +4,7 @@
 #include "specification.hpp"
 #include "types.hpp"
 #include "utils.hpp"
-#include <boost/pfr/precise.hpp>
+#include "boost/pfr/precise.hpp"
 #include <iostream>
 #include <type_traits>
 
