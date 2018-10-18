@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
 namespace compile_time {
 template <std::size_t offset, typename... T> struct _tagged_union;
@@ -28,8 +29,14 @@ template <std::size_t offset, typename... T> struct _tagged_union;
   active active_member = active::None;                                         \
   union_t data = {.blank = uninit{}};
 
+#define mutils_ctime_tu_default_constructors                                   \
+  constexpr _tagged_union() = default;                                         \
+  constexpr _tagged_union(const _tagged_union &) = default;                    \
+  constexpr _tagged_union(_tagged_union &&) = default;                         \
+  constexpr _tagged_union &operator=(const _tagged_union &o) = default;        \
+  constexpr _tagged_union &operator=(_tagged_union &&o) = default;
+
 template <std::size_t offset, typename A> struct _tagged_union<offset, A> {
-  constexpr _tagged_union() = default;
   struct uninit {};
   union union_t {
     A fst;
@@ -37,12 +44,12 @@ template <std::size_t offset, typename A> struct _tagged_union<offset, A> {
   };
   enum class active { _A, None };
 
-  mutils_ctime_tu_common_blank mutils_ctime_tu_common_A
+  mutils_ctime_tu_default_constructors mutils_ctime_tu_common_blank
+      mutils_ctime_tu_common_A
 };
 
 template <std::size_t offset, typename A, typename B>
 struct _tagged_union<offset, A, B> {
-  constexpr _tagged_union() = default;
   struct uninit {};
   union union_t {
     A fst;
@@ -50,17 +57,18 @@ struct _tagged_union<offset, A, B> {
     uninit blank;
   };
   enum class active { _A, _B, None };
-  mutils_ctime_tu_common_blank mutils_ctime_tu_common_A mutils_ctime_tu_common_B
+  mutils_ctime_tu_default_constructors mutils_ctime_tu_common_blank
+      mutils_ctime_tu_common_A mutils_ctime_tu_common_B
 };
 
 template <std::size_t offset, typename A, typename B, typename C,
           typename... rest>
 struct _tagged_union<offset, A, B, C, rest...> {
-  constexpr _tagged_union() = default;
   union union_t {
     A fst;
     B snd;
     _tagged_union<offset + 2, C, rest...> rst;
+    constexpr union_t &operator=(const union_t &) = default;
   };
   enum class active { _A, _B, Rst };
   active active_member = active::Rst;
@@ -76,7 +84,8 @@ struct _tagged_union<offset, A, B, C, rest...> {
     }
     return data.rst.reset(e);
   }
-  mutils_ctime_tu_common_A mutils_ctime_tu_common_B
+  mutils_ctime_tu_default_constructors mutils_ctime_tu_common_A
+      mutils_ctime_tu_common_B
 };
 
 template <std::size_t init, typename T, typename T2, typename... seq>
@@ -92,6 +101,10 @@ constexpr inline std::size_t
 
 template <typename... T> struct tagged_union {
   constexpr tagged_union() = default;
+  constexpr tagged_union(const tagged_union &) = default;
+  constexpr tagged_union(tagged_union &&) = default;
+  constexpr tagged_union &operator=(const tagged_union &) = default;
+  constexpr tagged_union &operator=(tagged_union &&) = default;
   static_assert(sizeof...(T) >= 1, "Error: tagged union minimum size is 1.");
   _tagged_union<true, T...> data{};
   std::size_t active_member = sizeof...(T);
