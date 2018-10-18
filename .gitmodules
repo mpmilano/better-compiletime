@@ -2,3 +2,6 @@
 	path = mutils
 	url = https://github.com/mpmilano/mutils.git
 	branch = better-compiletime
+[submodule "magic_get"]
+	path = magic_get
+	url = https://github.com/apolukhin/magic_get.git
