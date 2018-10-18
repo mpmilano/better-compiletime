@@ -1,10 +1,10 @@
 
+#include "boost/pfr/precise.hpp"
 #include "convert.hpp"
 #include "instance.hpp"
 #include "specification.hpp"
 #include "types.hpp"
 #include "utils.hpp"
-#include "boost/pfr/precise.hpp"
 #include <iostream>
 #include <type_traits>
 

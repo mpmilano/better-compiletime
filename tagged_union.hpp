@@ -6,65 +6,77 @@
 namespace compile_time {
 template <std::size_t offset, typename... T> struct _tagged_union;
 
+#define mutils_ctime_tu_common_accessors(L, indx, offset)                      \
+  constexpr L &get(L const *const) { return data.indx; }                       \
+  constexpr L &get(std::integral_constant<std::size_t, offset> const *const) { \
+    return get((L *)nullptr);                                                  \
+  }                                                                            \
+  constexpr L &reset(L const *const) {                                         \
+    if (active_member != active::_##L) {                                       \
+      active_member = active::_##L;                                            \
+      data = union_t{.indx = L{}};                                             \
+    }                                                                          \
+    return data.indx;                                                          \
+  }
+
+#define mutils_ctime_tu_common_A                                               \
+  mutils_ctime_tu_common_accessors(A, fst, offset)
+#define mutils_ctime_tu_common_B                                               \
+  mutils_ctime_tu_common_accessors(B, snd, offset + 1)
+
+#define mutils_ctime_tu_common_blank                                           \
+  active active_member = active::None;                                         \
+  union_t data = {.blank = uninit{}};
+
 template <std::size_t offset, typename A> struct _tagged_union<offset, A> {
   constexpr _tagged_union() = default;
-  A data{};
-  constexpr A &get(A const *const) { return data; }
-  constexpr A &get(std::integral_constant<std::size_t, offset> const *const) {
-    return data;
-  }
+  struct uninit {};
+  union union_t {
+    A fst;
+    uninit blank;
+  };
+  enum class active { _A, None };
 
-  template <typename V> constexpr A &reset(A const *const, V &&value) {
-    data = value;
-    return data;
-  }
+  mutils_ctime_tu_common_blank mutils_ctime_tu_common_A
 };
 
-template <std::size_t offset, typename A, typename B, typename... rest>
-struct _tagged_union<offset, A, B, rest...> {
+template <std::size_t offset, typename A, typename B>
+struct _tagged_union<offset, A, B> {
+  constexpr _tagged_union() = default;
+  struct uninit {};
+  union union_t {
+    A fst;
+    B snd;
+    uninit blank;
+  };
+  enum class active { _A, _B, None };
+  mutils_ctime_tu_common_blank mutils_ctime_tu_common_A mutils_ctime_tu_common_B
+};
+
+template <std::size_t offset, typename A, typename B, typename C,
+          typename... rest>
+struct _tagged_union<offset, A, B, C, rest...> {
   constexpr _tagged_union() = default;
   union union_t {
     A fst;
     B snd;
-    _tagged_union<offset + 2, rest...> rst;
+    _tagged_union<offset + 2, C, rest...> rst;
   };
   enum class active { _A, _B, Rst };
   active active_member = active::Rst;
-  union_t data = {.rst = {_tagged_union<offset + 2, rest...>{}}};
-  constexpr A &get(A const *const) { return data.fst; }
-  constexpr B &get(B const *const) { return data.snd; }
-  constexpr A &get(std::integral_constant<std::size_t, offset> const *const) {
-    return get((A *)nullptr);
-  }
-  constexpr B &
-  get(std::integral_constant<std::size_t, offset + 1> const *const) {
-    return get((B *)nullptr);
-  }
+  union_t data = {.rst = {_tagged_union<offset + 2, C, rest...>{}}};
   template <typename T> constexpr T &get(T const *const e) {
     return data.rst.get(e);
   }
 
-  constexpr A &reset(A const *const) {
-    if (active_member != active::_A) {
-      active_member = active::_A;
-      data = union_t{.fst = A{}};
-    }
-    return data.fst;
-  }
-  constexpr B &reset(B const *const) {
-    if (active_member != active::_B) {
-      active_member = active::_B;
-      data = union_t{.snd = B{}};
-    }
-    return data.snd;
-  }
   template <typename T> constexpr T &reset(T const *const e) {
     if (active_member != active::Rst) {
       active_member = active::Rst;
-      data = union_t{ .rst = _tagged_union<offset + 2, rest...>{}};
+      data = union_t{.rst = _tagged_union<offset + 2, C, rest...>{}};
     }
     return data.rst.reset(e);
   }
+  mutils_ctime_tu_common_A mutils_ctime_tu_common_B
 };
 
 template <std::size_t init, typename T, typename T2, typename... seq>

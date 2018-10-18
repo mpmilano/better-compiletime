@@ -1,10 +1,10 @@
 #pragma once
 #include "auto_specification.hpp"
+#include "boost/pfr/precise.hpp"
 #include "mutils/type_utils.hpp"
 #include "provided_values.hpp"
 #include "specification.hpp"
 #include "utils.hpp"
-#include "boost/pfr/precise.hpp"
 
 namespace compile_time {
 namespace value {

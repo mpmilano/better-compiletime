@@ -1,6 +1,6 @@
 #pragma once
-#include "mutils/type_utils.hpp"
 #include "boost/pfr/precise.hpp"
+#include "mutils/type_utils.hpp"
 #include <type_traits>
 
 #define CONSTVARY(name, body...) name body name const body

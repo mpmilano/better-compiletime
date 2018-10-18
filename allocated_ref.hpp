@@ -11,23 +11,28 @@ template <typename T> struct allocated_ref {
 private:
   std::size_t indx;
 
+  template <std::size_t size, typename Allocator>
+  decltype(auto) construct(SingleAllocator<size, T, Allocator> &new_parent) {
+    return new_parent.parent.slab[indx - 1].template reset<T>();
+  }
+
 public:
   template <std::size_t size, typename Allocator>
   constexpr T &get(SingleAllocator<size, T, Allocator> &new_parent) {
-    return new_parent.data[indx - 1];
+    return new_parent.parent.slab[indx - 1].template get<T>();
   }
 
   template <std::size_t size, typename Allocator>
   constexpr const T &
   get(SingleAllocator<size, T, Allocator> &new_parent) const {
-    return new_parent.data[indx - 1];
+    return new_parent.parent.slab[indx - 1].template get<T>();
   }
 
   template <std::size_t size, typename Allocator>
   constexpr const T &
   get(const SingleAllocator<size, T, Allocator> &new_parent) const {
     assert(indx > 0);
-    return new_parent.data[indx - 1];
+    return new_parent.parent.slab[indx - 1].template get<T>();
   }
 
   constexpr allocated_ref(const allocated_ref &) = delete;
@@ -64,20 +69,20 @@ private:
 public:
   template <typename T, std::size_t size, typename Allocator>
   constexpr T &get(SingleAllocator<size, T, Allocator> &new_parent) {
-    return new_parent.data[indx - 1];
+    return new_parent.parent.slab[indx - 1].template get<T>();
   }
 
   template <typename T, std::size_t size, typename Allocator>
   constexpr const T &
   get(SingleAllocator<size, T, Allocator> &new_parent) const {
-    return new_parent.data[indx - 1];
+    return new_parent.parent.slab[indx - 1].template get<T>();
   }
 
   template <typename T, std::size_t size, typename Allocator>
   constexpr const T &
   get(const SingleAllocator<size, T, Allocator> &new_parent) const {
     assert(indx > 0);
-    return new_parent.data[indx - 1];
+    return new_parent.parent.slab[indx - 1].template get<T>();
   }
 
   template <typename T, std::size_t size, typename Top, typename... Subs>
