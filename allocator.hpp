@@ -80,7 +80,10 @@ struct Allocator
   tagged_union<Subs...> slab[s] = {tagged_union<Subs...>{}};
   bool free_slots[s] = {true};
 
-  constexpr Allocator() : SingleAllocator<s, Subs, Allocator>(*this)... {}
+  constexpr Allocator() : SingleAllocator<s, Subs, Allocator>(*this)... {
+    for (auto i = 0u; i < size; ++i)
+      free_slots[i] = true;
+  }
 
   constexpr Allocator(Allocator &&o)
       : SingleAllocator<s, Subs, Allocator>(std::move(o), *this)...,
