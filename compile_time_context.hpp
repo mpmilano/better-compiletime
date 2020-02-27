@@ -23,6 +23,10 @@ template <typename T, typename A> constexpr decltype(auto) allocate(A &&a) {
   return a.template allocate<value::convert_to_instance_t<T>>();
 }
 
+template <typename T, typename A> constexpr decltype(auto) get_single_allocator(A &&a) {
+  return a.template get<value::convert_to_instance_t<T>>();
+}
+
 template <typename top, typename... specs> struct compile_time_workspace {
   template <typename T> using ct = value::convert_to_instance_t<T>;
 
