@@ -5,7 +5,11 @@
 #include "utils.hpp"
 
 namespace compile_time {
+#ifdef ALLOCATOR_SIZE
+constexpr inline std::size_t allocator_size = ALLOCATOR_SIZE;
+#else
 constexpr inline std::size_t allocator_size = 100;
+#endif
 namespace ctctx {
 template <typename top, typename... specs>
 using Allocator =
