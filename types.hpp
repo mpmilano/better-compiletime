@@ -37,6 +37,12 @@ template <char... str> struct error {
   static const constexpr bool is_error{true};
 };
 
+template <char... str> constexpr bool is_error(const error<str...> &) {
+  return true;
+}
+
+template <typename T> constexpr bool is_error(T &&) { return false; }
+
 template <char... str>
 std::ostream &operator<<(std::ostream &o, const error<str...> &e) {
   return o << e.msg;
