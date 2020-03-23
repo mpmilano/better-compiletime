@@ -27,7 +27,8 @@ template <typename T, typename A> constexpr decltype(auto) allocate(A &&a) {
   return a.template allocate<value::convert_to_instance_t<T>>();
 }
 
-template <typename T, typename A> constexpr decltype(auto) get_single_allocator(A &&a) {
+template <typename T, typename A>
+constexpr decltype(auto) get_single_allocator(A &&a) {
   return a.template get<value::convert_to_instance_t<T>>();
 }
 
@@ -110,6 +111,15 @@ template <typename top, typename... specs> struct compile_time_workspace {
   constexpr void error(const char *str) {
     mutils::cstring::str_cpy(allocator.top.error.msg, str);
     allocator.top.error_set = true;
+  }
+
+  template <typename... T>
+  constexpr void error(const char *str1, const char *str2, T &&... more_strs) {
+    using namespace mutils::cstring;
+    using str_nc = char[1000];
+    str_nc combined = {0};
+    combine_strings(combined, str1, str2);
+    error(combined, std::forward<T>(more_strs)...);
   }
 };
 } // namespace ctctx

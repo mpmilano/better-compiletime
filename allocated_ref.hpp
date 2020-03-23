@@ -12,7 +12,8 @@ private:
   std::size_t indx;
 
   template <std::size_t size, typename Allocator>
-  constexpr decltype(auto) construct(SingleAllocator<size, T, Allocator> &new_parent) {
+  constexpr decltype(auto)
+  construct(SingleAllocator<size, T, Allocator> &new_parent) {
     return new_parent.parent.slab[indx - 1].template reset<T>();
   }
 

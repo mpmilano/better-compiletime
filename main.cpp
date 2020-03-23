@@ -100,9 +100,9 @@ constexpr auto try_with_allocator_sub() {
   auto ref = ctctx::allocate<boringer_body>(a);
   ref.get(a).match([](auto &i) constexpr { i = 5; });
   a.top.match([&](auto &p) constexpr {
-			p = erased_ref(std::move(ref),
-										 ctctx::get_single_allocator<boringer_body>(a));
-		});
+    p = erased_ref(std::move(ref),
+                   ctctx::get_single_allocator<boringer_body>(a));
+  });
   return a;
 }
 
@@ -143,8 +143,10 @@ int main() {
     auto ref = ctctx::allocate<boringer_body>(a);
     ref.get(a).match([](auto &i) constexpr { i = 5; });
     auto copy_of_boringer_pre_move = ref.get(a);
-    a.top.match([&](auto &p) constexpr { p = erased_ref{std::move(ref),
-																												ctctx::get_single_allocator<boringer_body>(a)}; });
+    a.top.match([&](auto &p) constexpr {
+      p = erased_ref{std::move(ref),
+                     ctctx::get_single_allocator<boringer_body>(a)};
+    });
     auto copy_of_boringer_post_move = ref.get(a);
     auto copy_of_top = a.top;
     (void)copy_of_boringer_post_move;
@@ -162,10 +164,10 @@ int main() {
   constexpr auto a = try_harder();
   constexpr auto one = a.match([](const int &one, auto &&...) { return one; });
   static_assert(one == 1);
-  constexpr auto five = a.match([](
-      auto &&, auto &&, const value::instance<client::B> &three) constexpr {
-    return three.match([](const int &three) constexpr { return three; });
-  });
+  constexpr auto five = a.match(
+      [](auto &&, auto &&, const value::instance<client::B> &three) constexpr {
+        return three.match([](const int &three) constexpr { return three; });
+      });
   static_assert(five == 5);
   constexpr auto c = try_3();
   constexpr auto four = c.four;
@@ -187,7 +189,7 @@ int main() {
   using F = holder_for_try_with_allocator_F<holder_for_try_with_allocator>;
   using holder = typename F::holder;
   compile_time_context<holder>::template convert_to_type_f<F>();
-  //try_with_allcator_str::step1::print();
-  //with_allocator.print();
+  // try_with_allcator_str::step1::print();
+  // with_allocator.print();
   (void)with_allocator;
 }
