@@ -14,7 +14,7 @@ struct SingleAllocator {
   const std::size_t allocator_index;
   Allocator &parent;
 
-  constexpr SingleAllocator(SingleAllocator &&o, Allocator &a)
+  constexpr SingleAllocator(SingleAllocator &&, Allocator &a)
       : allocator_index(a.template get_allocator_index<SingleAllocator>()),
         parent(a) {}
   constexpr SingleAllocator(Allocator &a)

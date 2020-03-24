@@ -67,7 +67,7 @@ constexpr auto _convert_to_value(Allocator &, const mutils::String<str...> &s) {
 }
 
 template <typename expected_return, typename Allocator, char... str>
-constexpr auto _convert_to_value(Allocator &, const types::error<str...> &s) {
+constexpr auto _convert_to_value(Allocator &, const types::error<str...> &) {
   error_t s2;
   constexpr const char rstr[sizeof...(str) + 1] = {str..., 0};
   mutils::cstring::str_cpy(s2.msg, rstr);
@@ -82,7 +82,7 @@ template <typename expected_return, typename Allocator, typename... T>
 struct list_helper {
   template <std::size_t... indices>
   static constexpr auto
-  _convert_to_value(Allocator &a, const types::list<T...> &s,
+  _convert_to_value(Allocator &a, const types::list<T...> &,
                     const std::integer_sequence<std::size_t, indices...> &) {
     static_assert(is_value_list<expected_return>::value,
                   "Error: list expected but not encountered.");
