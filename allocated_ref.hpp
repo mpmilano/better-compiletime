@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
 #include <cstddef>
+#include "inline_decision.hpp"
+
 namespace compile_time {
 template <std::size_t size, typename T, typename Allocator>
 struct SingleAllocator;
@@ -12,7 +14,7 @@ private:
   std::size_t indx;
 
   template <std::size_t size, typename Allocator>
-  constexpr decltype(auto)
+  constexpr inline DO_INLINE decltype(auto)
   construct(SingleAllocator<size, T, Allocator> &new_parent) {
     return new_parent.parent.slab[indx - 1].template reset<T>();
   }

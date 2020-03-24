@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+#include "inline_decision.hpp"
 
 namespace compile_time {
 template <std::size_t offset, typename... T> struct _tagged_union;
@@ -12,7 +13,7 @@ template <std::size_t offset, typename... T> struct _tagged_union;
   constexpr L &get(std::integral_constant<std::size_t, offset> const *const) { \
     return get((L *)nullptr);                                                  \
   }                                                                            \
-  constexpr L &reset(L const *const) {                                         \
+  constexpr inline DO_INLINE L &reset(L const *const) {                                         \
     if (active_member != active::_##L) {                                       \
       active_member = active::_##L;                                            \
       data = union_t{.indx = L{}};                                             \
@@ -77,7 +78,9 @@ struct _tagged_union<offset, A, B, C, rest...> {
     return data.rst.get(e);
   }
 
-  template <typename T> constexpr T &reset(T const *const e) {
+  template <typename T> constexpr inline DO_INLINE T &reset(T const *const e) {
+    static_assert(!std::is_same_v<T,A> || !std::is_same_v<T,B> , 
+    "Error: this overload should not have been chosen. ");
     if (active_member != active::Rst) {
       active_member = active::Rst;
       data = union_t{.rst = _tagged_union<offset + 2, C, rest...>{}};
@@ -122,7 +125,7 @@ template <typename... T> struct tagged_union {
     return get((std::integral_constant<std::size_t, s> *)nullptr);
   }
 
-  template <typename T2> constexpr T2 &reset() {
+  template <typename T2> inline DO_INLINE constexpr T2 &reset() {
     active_member = index_translate<T2, T...>;
     return data.reset((T2 *)nullptr);
   }
